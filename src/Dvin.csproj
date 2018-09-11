@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Aspenlaub.Net.GitHub.CSharp.Dvin</AssemblyName>
     <RootNamespace>Aspenlaub.Net.GitHub.CSharp.Dvin</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateBuildInfoConfigFile>false</GenerateBuildInfoConfigFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Deterministic>false</Deterministic>
