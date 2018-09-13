@@ -17,7 +17,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
         public static IWebHostBuilder UseDvin(this IWebHostBuilder builder, string dvinAppId, string[] mainProgramArgs) {
             var dvinApp = new DvinRepository().LoadAsync(dvinAppId).Result;
             if (dvinApp == null) {
-                throw new Exception("Dvin app not found");
+                throw new Exception($"Dvin app {dvinAppId} not found");
             }
 
             var port = IsService(mainProgramArgs) ? dvinApp.ReleasePort : dvinApp.DebugPort;
