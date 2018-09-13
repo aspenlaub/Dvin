@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
     public class DvinApp {
-        [XmlAttribute("id")]
+        [Key, XmlAttribute("id")]
         public string Id { get; set; }
 
         [XmlElement("description")]
