@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.PeghStandard" Version="1.0.6820.32010" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
   </ItemGroup>
 </Project>
