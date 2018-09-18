@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
@@ -13,7 +14,10 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories {
             var repository = new SecretRepository(new ComponentProvider());
             var errorsAndInfos = new ErrorsAndInfos();
             var secretDvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
-            return errorsAndInfos.AnyErrors() ? new List<DvinApp>() : secretDvinApps;
+            if (errorsAndInfos.AnyErrors()) {
+                throw new Exception(string.Join("\r\n", errorsAndInfos.Errors));
+            }
+            return secretDvinApps;
         }
 
         public async Task<DvinApp> LoadAsync(string id) {
