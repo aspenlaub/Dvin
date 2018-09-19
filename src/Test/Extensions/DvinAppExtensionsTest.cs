@@ -51,7 +51,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             errorsAndInfos = new ErrorsAndInfos();
             fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("abc", null));
             sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
-            Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.EndsWith("does not start with win7")));
+            Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.EndsWith("does not start with win")));
 
             errorsAndInfos = new ErrorsAndInfos();
             fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("win7", null));
