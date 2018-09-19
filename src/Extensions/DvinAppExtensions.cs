@@ -53,8 +53,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return;
             }
 
-            if (!runtimeIdentifierElementValue.StartsWith(@"win7")) {
-                errorsAndInfos.Errors.Add($"RuntimeIdentifier element in {pubXmlFile} does not start with win7");
+            if (!runtimeIdentifierElementValue.StartsWith(@"win")) {
+                errorsAndInfos.Errors.Add($"RuntimeIdentifier element in {pubXmlFile} does not start with win");
                 return;
             }
 
