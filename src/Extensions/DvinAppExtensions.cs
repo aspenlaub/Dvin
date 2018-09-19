@@ -79,7 +79,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return;
             }
 
-            var expectedPublishUrlElement = "$(MSBuildThisFileDirectory)" + string.Join("", pubXmlFile.Substring(pos).ToCharArray().Where(c => c == '\\').Select(c => @"..\")) + publishFolder.FullName.Substring(pos + 1);
+            var expectedPublishUrlElement = "$(MSBuildThisFileDirectory)" + string.Join("", pubXmlFile.Substring(pos + 1).ToCharArray().Where(c => c == '\\').Select(c => @"..\")) + publishFolder.FullName.Substring(pos + 1);
 
             if (publishUrlElementValue == expectedPublishUrlElement) {
                 return;
