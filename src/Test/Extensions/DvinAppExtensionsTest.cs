@@ -69,7 +69,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.Contains("should be $(MSBuildThisFileDirectory)")));
 
             errorsAndInfos = new ErrorsAndInfos();
-            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("win7", "$(MSBuildThisFileDirectory)..\\..\\..\\GraspNetCoreBin\\Publish"));
+            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("win7", "$(MSBuildThisFileDirectory)..\\..\\..\\..\\GraspNetCoreBin\\Publish"));
             sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
 
