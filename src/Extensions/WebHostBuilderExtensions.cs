@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Helpers;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
@@ -19,6 +20,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             if (dvinApp == null) {
                 throw new Exception($"Dvin app {dvinAppId} not found");
             }
+
+            SecretsHelper.UpdateSecrets();
 
             var port = IsService(mainProgramArgs) ? dvinApp.ReleasePort : dvinApp.DebugPort;
             builder.UseUrls($"http://localhost:{port}");
