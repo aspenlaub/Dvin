@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Helpers;
+using System.Threading.Tasks;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
+using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
 // ReSharper disable UnusedMember.Global
@@ -16,12 +19,15 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
         }
 
         public static IWebHostBuilder UseDvin(this IWebHostBuilder builder, string dvinAppId, string[] mainProgramArgs) {
-            var dvinApp = new DvinRepository().LoadAsync(dvinAppId).Result;
+            var dvinRepository = new DvinRepository();
+            var fileSystemService = new FileSystemService();
+
+            builder.UpdateSecrets(dvinRepository, fileSystemService).Wait();
+
+            var dvinApp = dvinRepository.LoadAsync(dvinAppId).Result;
             if (dvinApp == null) {
                 throw new Exception($"Dvin app {dvinAppId} not found");
             }
-
-            SecretsHelper.UpdateSecrets();
 
             var port = IsService(mainProgramArgs) ? dvinApp.ReleasePort : dvinApp.DebugPort;
             builder.UseUrls($"http://localhost:{port}");
@@ -42,6 +48,25 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 host.RunAsService();
             } else {
                 host.Run();
+            }
+        }
+
+        public static async Task UpdateSecrets(this IWebHostBuilder builder, IDvinRepository dvinRepository, IFileSystemService fileSystemService) {
+            var localSystemFolder = await dvinRepository.LoadFolderAsync();
+            if (localSystemFolder == null) {
+                throw new Exception($"Local system folder for {Environment.MachineName} not found");
+            }
+
+            var mySecretsFolder = dvinRepository.MySecretRepositoryFolder();
+            if (mySecretsFolder == localSystemFolder.SecretsFolder) {
+                return;
+            }
+
+            foreach (var sourceFile in fileSystemService.ListFilesInDirectory(new Folder(localSystemFolder.SecretsFolder), "*.xml", SearchOption.TopDirectoryOnly)) {
+                var destFile = mySecretsFolder + sourceFile.Substring(localSystemFolder.SecretsFolder.Length);
+                if (!fileSystemService.Exists(destFile) || fileSystemService.ReadAllText(sourceFile) != fileSystemService.ReadAllText(destFile)) {
+                    fileSystemService.Copy(sourceFile, destFile, true);
+                }
             }
         }
     }

@@ -7,5 +7,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces {
     public interface IDvinRepository {
         Task<IList<DvinApp>> LoadAsync();
         Task<DvinApp> LoadAsync(string id);
+        Task<LocalSystemFolder> LoadFolderAsync();
+        string MySecretRepositoryFolder();
     }
 }

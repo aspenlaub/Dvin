@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,6 +21,19 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Repositories {
             Assert.IsTrue(apps.Any());
             var app = await sut.LoadAsync(apps[0].Id);
             Assert.AreEqual(app.Id, apps[0].Id);
+        }
+
+        [TestMethod]
+        public async Task CanGetLocalSystemFolder() {
+            var sut = new DvinRepository();
+            var folder = await sut.LoadFolderAsync();
+            Assert.IsNotNull(folder);
+        }
+
+        [TestMethod]
+        public void CanGetMySecretRepositoryFolder() {
+            var sut = new DvinRepository();
+            Assert.AreEqual(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Aspenlaub.Net\SecretRepository", sut.MySecretRepositoryFolder());
         }
     }
 }

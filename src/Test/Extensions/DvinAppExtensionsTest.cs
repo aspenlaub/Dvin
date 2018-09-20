@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Helpers;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
 using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Interfaces;
@@ -92,11 +91,6 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             }
             s = s + "</PropertyGroup></Project>";
             return s;
-        }
-
-        [TestMethod]
-        public void CanUpdateSecrets() {
-            SecretsHelper.UpdateSecrets();
         }
     }
 }
