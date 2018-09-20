@@ -51,7 +51,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             }
         }
 
-        public static async Task UpdateSecrets(this IWebHostBuilder builder, IDvinRepository dvinRepository, IFileSystemService fileSystemService) {
+        internal static async Task UpdateSecrets(this IWebHostBuilder builder, IDvinRepository dvinRepository, IFileSystemService fileSystemService) {
             var localSystemFolder = await dvinRepository.LoadFolderAsync();
             if (localSystemFolder == null) {
                 throw new Exception($"Local system folder for {Environment.MachineName} not found");
