@@ -18,6 +18,6 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
             }
         });
 
-        public string Guid => "{4C40BA08-3ED6-4019-BD2C-33390E0EEF74}";
+        public string Guid => "4C40BA08-3ED6-4019-BD2C-33390E0EEF74";
     }
 }
