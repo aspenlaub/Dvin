@@ -6,7 +6,5 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces {
     public interface IFileSystemService {
         IList<string> ListFilesInDirectory(IFolder folder, string pattern, SearchOption searchOption);
         string ReadAllText(string fileName);
-        bool Exists(string fileName);
-        void Copy(string sourceFileName, string destFileName, bool overwrite);
     }
 }

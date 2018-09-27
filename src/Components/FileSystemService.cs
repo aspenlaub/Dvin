@@ -14,13 +14,5 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
         public string ReadAllText(string fileName) {
             return File.ReadAllText(fileName);
         }
-
-        public bool Exists(string fileName) {
-            return File.Exists(fileName);
-        }
-
-        public void Copy(string sourceFileName, string destFileName, bool overwrite) {
-            File.Copy(sourceFileName, destFileName, overwrite);
-        }
     }
 }

@@ -25,20 +25,5 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories {
             var dvinApp = dvinApps.FirstOrDefault(d => d.Id == id);
             return dvinApp;
         }
-
-        public async Task<LocalSystemFolder> LoadFolderAsync() {
-            var secretLocalSystemFolders = new SecretLocalSystemFolders();
-            var repository = new SecretRepository(new ComponentProvider());
-            var errorsAndInfos = new ErrorsAndInfos();
-            var localSystemFolders = await repository.GetAsync(secretLocalSystemFolders, errorsAndInfos);
-            if (errorsAndInfos.AnyErrors()) {
-                throw new Exception(string.Join("\r\n", errorsAndInfos.Errors));
-            }
-            return localSystemFolders.FirstOrDefault(f => f.MachineId.Equals(Environment.MachineName, StringComparison.InvariantCultureIgnoreCase));
-        }
-
-        public string MySecretRepositoryFolder() {
-            return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Aspenlaub.Net\SecretRepository";
-        }
     }
 }
