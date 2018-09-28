@@ -8,8 +8,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
             new DvinApp {
                 Id = "GraspNetCore",
                 Description = "This is a nonsense entry with the sole purpose of providing a valid DvinApps secret",
-                DebugPort = 50114,
-                ReleasePort = 50115,
+                Port = 50114,
                 Executable = "Aspenlaub.Net.GraspNetCore.exe",
                 DvinAppFolders = new List<DvinAppFolder> {
                     new DvinAppFolder { MachineId = "AlicesMachine", SolutionFolder = @"D:\Users\Alice\GraspNetCore", PublishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish" },

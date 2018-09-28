@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -14,16 +15,16 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
     public static class DvinAppExtensions {
         private const string CsProjNamespace = "http://schemas.microsoft.com/developer/msbuild/2003";
 
-        public static string ServiceId(this DvinApp dvinApp) {
-            return dvinApp.Executable.Replace(".exe", $".{dvinApp.ReleasePort}");
-        }
-
-        public static void ValidatePubXml(this DvinApp dvinApp, IErrorsAndInfos errorsAndInfos) {
+        public static void ValidatePubXml(this IDvinApp dvinApp, IErrorsAndInfos errorsAndInfos) {
             ValidatePubXml(dvinApp, Environment.MachineName, new FileSystemService(), errorsAndInfos);
         }
 
-        public static void ValidatePubXml(this DvinApp dvinApp, string machineId, IFileSystemService fileSystemService, IErrorsAndInfos errorsAndInfos) {
-            var dvinAppFolder = dvinApp.DvinAppFolders.FirstOrDefault(d => d.MachineId.ToLowerInvariant() == machineId.ToLowerInvariant());
+        public static DvinAppFolder FolderOnMachine(this IDvinApp dvinApp, string machineId) {
+            return dvinApp.DvinAppFolders.FirstOrDefault(d => d.MachineId.ToLowerInvariant() == machineId.ToLowerInvariant());
+        }
+
+        public static void ValidatePubXml(this IDvinApp dvinApp, string machineId, IFileSystemService fileSystemService, IErrorsAndInfos errorsAndInfos) {
+            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
             if (dvinAppFolder == null) {
                 errorsAndInfos.Errors.Add($"No folders specified for {machineId} in secret {dvinApp.Id} dvin app");
                 return;
@@ -86,6 +87,52 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             }
 
             errorsAndInfos.Errors.Add($"publishUrl element in {pubXmlFile} should be {expectedPublishUrlElement}, but it is {publishUrlElementValue}");
+        }
+
+        public static bool IsPortListenedTo(this IDvinApp dvinApp) {
+            var processStarter = new ProcessStarter();
+            var errorsAndInfos = new ErrorsAndInfos();
+            using (var process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos)) {
+                processStarter.WaitForExit(process);
+            }
+            return errorsAndInfos.Infos.Any(i => i.Contains("TCP") && i.Contains("LISTENING") && i.Contains($":{dvinApp.Port} "));
+        }
+
+        public static bool HasAppBeenPublishedAfterLatestSourceChanges(this IDvinApp dvinApp, string machineId, IFileSystemService fileSystemService) {
+            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
+            if (dvinAppFolder == null) { return false; }
+
+            var sourceFiles = fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.SolutionFolder), "*.*", SearchOption.AllDirectories)
+                .Where(f => f.EndsWith("cs") || f.EndsWith("csproj") || f.EndsWith("cshtml") || f.EndsWith("json"))
+                .ToList();
+            if (!sourceFiles.Any()) { return false; }
+
+            var publishedFiles = fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.PublishFolder), "*.*", SearchOption.AllDirectories)
+                .Where(f => f.EndsWith("dll") || f.EndsWith("config") || f.EndsWith("dll") || f.EndsWith("exe") || f.EndsWith("json"))
+                .ToList();
+            if (!publishedFiles.Any()) { return false; }
+
+            var sourceChangedAt = sourceFiles.Max(f => fileSystemService.LastWriteTime(f));
+            var publishedAt = publishedFiles.Max(f => fileSystemService.LastWriteTime(f));
+            return sourceChangedAt > publishedAt;
+        }
+
+        public static Process Start(this IDvinApp dvinApp, IErrorsAndInfos errorsAndInfos) {
+            if (dvinApp.IsPortListenedTo()) {
+                errorsAndInfos.Errors.Add($"Another process already listens to port {dvinApp.Port}");
+                return null;
+            }
+
+            var machineId = Environment.MachineName;
+            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
+            if (dvinAppFolder == null) {
+                errorsAndInfos.Errors.Add($"No folders specified for {machineId} in secret {dvinApp.Id} dvin app");
+                return null;
+            }
+
+            var runner = new ProcessStarter();
+            var process = runner.StartProcess("dotnet", dvinApp.Executable, dvinAppFolder.PublishFolder, errorsAndInfos);
+            return process;
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
@@ -13,12 +14,6 @@ using Moq;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
     [TestClass]
     public class DvinAppExtensionsTest {
-        [TestMethod]
-        public void CanGetServiceId() {
-            var sut = new DvinApp { Executable = "This.Is.Not.An.exe", ReleasePort = 4711 };
-            Assert.AreEqual("This.Is.Not.An.4711", sut.ServiceId());
-        }
-
         [TestMethod]
         public void CanValidatePubXml() {
             var fileSystemServiceMock = new Mock<IFileSystemService>();
@@ -91,6 +86,62 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             }
             s = s + "</PropertyGroup></Project>";
             return s;
+        }
+
+        [TestMethod]
+        public void CanCheckIfPortIsListenedTo() {
+            var processStarter = new ProcessStarter();
+            var errorsAndInfos = new ErrorsAndInfos();
+            using (var process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos)) {
+                processStarter.WaitForExit(process);
+            }
+
+            var ports = new List<int>();
+            // ReSharper disable once LoopCanBePartlyConvertedToQuery
+            foreach(var s in errorsAndInfos.Infos.Where(i => i.Contains("TCP") && i.Contains("LISTENING") && i.Contains(':'))) {
+                var pos = s.IndexOf(':');
+                var pos2 = s.IndexOf(' ', pos);
+
+                if (!int.TryParse(s.Substring(pos + 1, pos2 - pos - 1), out var port)) { continue; }
+                if (ports.Contains(port)) { continue; }
+
+                ports.Add(port);
+            }
+
+            var sutMock = new Mock<IDvinApp>();
+            var sut = sutMock.Object;
+            foreach (var port in ports) {
+                sutMock.SetupGet(d => d.Port).Returns(port);
+                Assert.IsTrue(sut.IsPortListenedTo(), $"Port {port} is not listened to");
+            }
+
+            for (var port = 4711; port < 4722; port++) {
+                if (ports.Contains(port)) { continue; }
+
+                sutMock.SetupGet(d => d.Port).Returns(port);
+                Assert.IsFalse(sut.IsPortListenedTo(), $"Port {port} is listened to");
+            }
+        }
+
+        [TestMethod]
+        public void CanCheckIfAppHasBeenPublished() {
+            var fileSystemServiceMock = new Mock<IFileSystemService>();
+            var machineId = Environment.MachineName;
+            var sut = new DvinApp();
+            const string solutionFolder = @"D:\Users\Alice\GraspNetCore";
+            const string publishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish";
+            sut.DvinAppFolders.Add(new DvinAppFolder { MachineId = machineId, SolutionFolder = solutionFolder, PublishFolder = publishFolder });
+            fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns<IFolder, string, SearchOption>((f, p, s) => {
+                return new List<string> { f.FullName + @"\something.json" };
+            });
+            fileSystemServiceMock.Setup(f => f.LastWriteTime(It.IsAny<string>())).Returns<string>(f => {
+                return f.StartsWith(publishFolder) ? DateTime.Now : DateTime.Now.AddMinutes(1);
+            });
+            Assert.IsTrue(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
+            fileSystemServiceMock.Setup(f => f.LastWriteTime(It.IsAny<string>())).Returns<string>(f => {
+                return f.StartsWith(publishFolder) ? DateTime.Now.AddMinutes(1) : DateTime.Now;
+            });
+            Assert.IsFalse(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
         }
     }
 }

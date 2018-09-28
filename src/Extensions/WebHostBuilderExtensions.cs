@@ -13,8 +13,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 throw new Exception($"Dvin app {dvinAppId} not found");
             }
 
-            var port = release ? dvinApp.ReleasePort : dvinApp.DebugPort;
-            builder.UseUrls($"http://localhost:{port}");
+            builder.UseUrls($"http://localhost:{dvinApp.Port}");
             return builder;
         }
 

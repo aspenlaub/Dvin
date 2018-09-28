@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
@@ -13,6 +14,10 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
 
         public string ReadAllText(string fileName) {
             return File.ReadAllText(fileName);
+        }
+
+        public DateTime LastWriteTime(string fileName) {
+            return File.GetLastWriteTime(fileName);
         }
     }
 }
