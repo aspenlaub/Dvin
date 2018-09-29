@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -107,14 +108,47 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 .ToList();
             if (!sourceFiles.Any()) { return false; }
 
-            var publishedFiles = fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.PublishFolder), "*.*", SearchOption.AllDirectories)
-                .Where(f => f.EndsWith("dll") || f.EndsWith("config") || f.EndsWith("dll") || f.EndsWith("exe") || f.EndsWith("json"))
-                .ToList();
+            var publishedFiles = PublishedFiles(fileSystemService, dvinAppFolder);
             if (!publishedFiles.Any()) { return false; }
 
             var sourceChangedAt = sourceFiles.Max(f => fileSystemService.LastWriteTime(f));
             var publishedAt = publishedFiles.Max(f => fileSystemService.LastWriteTime(f));
             return publishedAt > sourceChangedAt;
+        }
+
+        private static List<string> PublishedFiles(IFileSystemService fileSystemService, DvinAppFolder dvinAppFolder) {
+            return fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.PublishFolder), "*.*", SearchOption.AllDirectories)
+                .Where(f => f.EndsWith("dll") || f.EndsWith("config") || f.EndsWith("dll") || f.EndsWith("exe") || f.EndsWith("json"))
+                .ToList();
+        }
+
+        public static void Publish(this IDvinApp dvinApp, IFileSystemService fileSystemService, IErrorsAndInfos errorsAndInfos) {
+            var machineId = Environment.MachineName;
+            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
+            if (dvinAppFolder == null) {
+                errorsAndInfos.Errors.Add($"No folders specified for {machineId} in secret {dvinApp.Id} dvin app");
+                return;
+            }
+
+            var publishedFiles = PublishedFiles(fileSystemService, dvinAppFolder);
+            var lastPublishedAt = publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
+
+            var projectFile = fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.SolutionFolder), "*.csproj", SearchOption.AllDirectories).FirstOrDefault(f => f.EndsWith(dvinApp.Id + ".csproj"));
+            if (projectFile == null) {
+                errorsAndInfos.Errors.Add($"No project file found for {machineId} and dvin app {dvinApp.Id}");
+                return;
+            }
+
+            var processStarter = new ProcessStarter();
+            var arguments = $"publish \"{projectFile}\" -c Release --no-build --no-restore -o \"{dvinAppFolder.PublishFolder}\"";
+            using (var process = processStarter.StartProcess("dotnet", arguments, "", errorsAndInfos)) {
+                processStarter.WaitForExit(process);
+            }
+
+            publishedFiles = PublishedFiles(fileSystemService, dvinAppFolder);
+            if (!publishedFiles.Any() || lastPublishedAt >= publishedFiles.Max(f => fileSystemService.LastWriteTime(f))) {
+                errorsAndInfos.Errors.Add($"Nothing was published for {machineId} and dvin app {dvinApp.Id}");
+            }
         }
 
         public static Process Start(this IDvinApp dvinApp, IErrorsAndInfos errorsAndInfos) {

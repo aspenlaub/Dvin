@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
 using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
 using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -142,6 +144,21 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
                 return f.StartsWith(publishFolder) ? DateTime.Now.AddMinutes(1) : DateTime.Now;
             });
             Assert.IsTrue(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
+        }
+
+        [TestMethod]
+        public async Task CanPublishApps() {
+            var repository = new DvinRepository();
+            var fileSystemService = new FileSystemService();
+            var apps = await repository.LoadAsync();
+            foreach (var app in apps) {
+                var errorsAndInfos = new ErrorsAndInfos();
+                app.Publish(fileSystemService, errorsAndInfos);
+                if (errorsAndInfos.Errors.Any(e => e.StartsWith("No folders specified"))) { continue; }
+
+                Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+                break;
+            }
         }
     }
 }
