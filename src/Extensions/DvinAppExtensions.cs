@@ -114,7 +114,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
 
             var sourceChangedAt = sourceFiles.Max(f => fileSystemService.LastWriteTime(f));
             var publishedAt = publishedFiles.Max(f => fileSystemService.LastWriteTime(f));
-            return sourceChangedAt > publishedAt;
+            return publishedAt > sourceChangedAt;
         }
 
         public static Process Start(this IDvinApp dvinApp, IErrorsAndInfos errorsAndInfos) {

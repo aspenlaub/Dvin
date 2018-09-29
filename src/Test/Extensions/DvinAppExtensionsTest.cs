@@ -137,11 +137,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             fileSystemServiceMock.Setup(f => f.LastWriteTime(It.IsAny<string>())).Returns<string>(f => {
                 return f.StartsWith(publishFolder) ? DateTime.Now : DateTime.Now.AddMinutes(1);
             });
-            Assert.IsTrue(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
+            Assert.IsFalse(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
             fileSystemServiceMock.Setup(f => f.LastWriteTime(It.IsAny<string>())).Returns<string>(f => {
                 return f.StartsWith(publishFolder) ? DateTime.Now.AddMinutes(1) : DateTime.Now;
             });
-            Assert.IsFalse(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
+            Assert.IsTrue(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
         }
     }
 }
