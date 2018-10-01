@@ -11,8 +11,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
                 Port = 50114,
                 Executable = "Aspenlaub.Net.GraspNetCore.exe",
                 DvinAppFolders = new List<DvinAppFolder> {
-                    new DvinAppFolder { MachineId = "AlicesMachine", SolutionFolder = @"D:\Users\Alice\GraspNetCore", PublishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish" },
-                    new DvinAppFolder { MachineId = "BobsMachine", SolutionFolder = @"C:\Users\Bob\GraspNetCore", PublishFolder = @"C:\Users\Bob\GraspNetCoreBin\Publish" },
+                    new DvinAppFolder { MachineId = "AlicesMachine", SolutionFolder = @"D:\Users\Alice\GraspNetCore", PublishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish", ExceptionLogFolder = @"D:\Temp\Exceptions" },
+                    new DvinAppFolder { MachineId = "BobsMachine", SolutionFolder = @"C:\Users\Bob\GraspNetCore", PublishFolder = @"C:\Users\Bob\GraspNetCoreBin\Publish", ExceptionLogFolder = @"D:\Temp\Exceptions" },
                 }
             }
         });
