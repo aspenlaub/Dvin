@@ -10,5 +10,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
 
         [XmlAttribute("publishfolder")]
         public string PublishFolder { get; set; }
+
+        [XmlAttribute("exceptionlogfolder")]
+        public string ExceptionLogFolder { get; set; }
     }
 }

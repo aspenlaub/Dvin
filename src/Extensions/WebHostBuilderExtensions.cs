@@ -1,6 +1,9 @@
 ﻿using System;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
+using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
 using Microsoft.AspNetCore.Hosting;
+
 // ReSharper disable UnusedMember.Global
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
@@ -12,6 +15,13 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             if (dvinApp == null) {
                 throw new Exception($"Dvin app {dvinAppId} not found");
             }
+
+            var dvinAppFolder = dvinApp.FolderOnMachine(Environment.MachineName);
+            if (dvinAppFolder == null) {
+                throw new Exception($"Folders for dvin app {dvinAppId} not found");
+            }
+
+            DvinExceptionFilterAttribute.SetExceptionLogFolder(new Folder(dvinAppFolder.ExceptionLogFolder));
 
             builder.UseUrls($"http://localhost:{dvinApp.Port}");
             return builder;
