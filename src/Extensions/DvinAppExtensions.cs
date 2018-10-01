@@ -49,16 +49,6 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
 
             var namespaceManager = new XmlNamespaceManager(new NameTable());
             namespaceManager.AddNamespace("cp", CsProjNamespace);
-            var runtimeIdentifierElementValue = document.XPathSelectElement("./cp:Project/cp:PropertyGroup/cp:RuntimeIdentifier", namespaceManager)?.Value;
-            if (string.IsNullOrWhiteSpace(runtimeIdentifierElementValue)) {
-                errorsAndInfos.Errors.Add($"RuntimeIdentifier element not found in {pubXmlFile}");
-                return;
-            }
-
-            if (!runtimeIdentifierElementValue.StartsWith(@"win")) {
-                errorsAndInfos.Errors.Add($"RuntimeIdentifier element in {pubXmlFile} does not start with win");
-                return;
-            }
 
             var publishUrlElementValue = document.XPathSelectElement("./cp:Project/cp:PropertyGroup/cp:publishUrl", namespaceManager)?.Value;
             if (string.IsNullOrWhiteSpace(publishUrlElementValue)) {
@@ -135,7 +125,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
 
             var projectFile = fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.SolutionFolder), "*.csproj", SearchOption.AllDirectories).FirstOrDefault(f => f.EndsWith(dvinApp.Id + ".csproj"));
             if (projectFile == null) {
-                errorsAndInfos.Errors.Add($"No project file found for {machineId} and dvin app {dvinApp.Id}");
+                errorsAndInfos.Errors.Add($"No project file found for {machineId} and dvin app {dvinApp.Id} (must end with {dvinApp.Id}.csproj)");
                 return;
             }
 

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
@@ -41,32 +43,22 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
             errorsAndInfos = new ErrorsAndInfos();
             fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns(new List<string> { solutionFolder + @"\Properties\publishProfile.pubxml" });
-            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml(null, null));
-            sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
-            Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith("RuntimeIdentifier element not found")));
-
-            errorsAndInfos = new ErrorsAndInfos();
-            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("abc", null));
-            sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
-            Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.EndsWith("does not start with win")));
-
-            errorsAndInfos = new ErrorsAndInfos();
-            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("win7", null));
+            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml(null));
             sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith("publishUrl element not found")));
 
             errorsAndInfos = new ErrorsAndInfos();
-            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("win7", "abc"));
+            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("abc"));
             sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.EndsWith("does not start with $(MSBuildThisFileDirectory)")));
 
             errorsAndInfos = new ErrorsAndInfos();
-            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("win7", "$(MSBuildThisFileDirectory)"));
+            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("$(MSBuildThisFileDirectory)"));
             sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.Contains("should be $(MSBuildThisFileDirectory)")));
 
             errorsAndInfos = new ErrorsAndInfos();
-            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("win7", "$(MSBuildThisFileDirectory)..\\..\\GraspNetCoreBin\\Publish"));
+            fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("$(MSBuildThisFileDirectory)..\\..\\GraspNetCoreBin\\Publish"));
             sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
 
@@ -75,13 +67,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith("Found 0 pubxml files")));
         }
 
-        private string ComposePubXml(string runtimeIdentifier, string publishUrl) {
+        private string ComposePubXml(string publishUrl) {
             var s = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
                     + "<Project ToolsVersion=\"4.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"><PropertyGroup>";
-
-            if (!string.IsNullOrWhiteSpace(runtimeIdentifier)) {
-                s = s + $"<RuntimeIdentifier>{runtimeIdentifier}</RuntimeIdentifier>";
-            }
 
             if (!string.IsNullOrWhiteSpace(publishUrl)) {
                 s = s + $"<publishUrl>{publishUrl}</publishUrl>";
@@ -158,6 +146,37 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
                 Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
                 break;
+            }
+        }
+
+        [TestMethod]
+        public async Task CanStartSampleApp() {
+            var repository = new DvinRepository();
+            var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId);
+            Assert.IsNotNull(dvinApp);
+
+            var fileSystemService = new FileSystemService();
+            var errorsAndInfos = new ErrorsAndInfos();
+
+            dvinApp.ValidatePubXml(errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+
+            if (!dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(Environment.MachineName, fileSystemService)) {
+                dvinApp.Publish(fileSystemService, errorsAndInfos);
+                Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+            }
+
+            Assert.IsTrue(dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(Environment.MachineName, fileSystemService));
+
+            using (var process = dvinApp.Start(errorsAndInfos)) {
+                var url = $"http://localhost:{dvinApp.Port}/Home";
+                using (var client = new HttpClient()) {
+                    var response = await client.GetAsync(url);
+                    Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                    var content = await response.Content.ReadAsStringAsync();
+                    Assert.IsTrue(content.Contains("Hello World"));
+                }
+                process?.Kill();
             }
         }
     }

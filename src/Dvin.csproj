@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Aspenlaub.Net.GitHub.CSharp.Dvin</AssemblyName>
@@ -9,23 +8,23 @@
     <GenerateBuildInfoConfigFile>false</GenerateBuildInfoConfigFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Deterministic>false</Deterministic>
+    <RazorCompileToolset>PrecompilationTool</RazorCompileToolset>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <NuspecFile>Dvin.nuspec</NuspecFile>
   </PropertyGroup>
-  
   <ItemGroup>
+    <Compile Remove="Sample\**" />
     <Compile Remove="Test\**" />
+    <EmbeddedResource Remove="Sample\**" />
     <EmbeddedResource Remove="Test\**" />
+    <None Remove="Sample\**" />
     <None Remove="Test\**" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.PeghStandard" Version="1.0.6820.32010" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.2" />
   </ItemGroup>
-
 </Project>
