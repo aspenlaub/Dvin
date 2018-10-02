@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -169,14 +170,32 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             Assert.IsTrue(dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(Environment.MachineName, fileSystemService));
 
             using (var process = dvinApp.Start(errorsAndInfos)) {
+                Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+                Assert.IsNotNull(process);
                 var url = $"http://localhost:{dvinApp.Port}/Home";
-                using (var client = new HttpClient()) {
-                    var response = await client.GetAsync(url);
-                    Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-                    var content = await response.Content.ReadAsStringAsync();
-                    Assert.IsTrue(content.Contains("Hello World"));
+                await Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
+                Assert.IsTrue(dvinApp.IsPortListenedTo());
+                try {
+                    using (var client = new HttpClient()) {
+                        var response = await client.GetAsync(url);
+                        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                        var content = await response.Content.ReadAsStringAsync();
+                        Assert.IsTrue(content.Contains("Hello World"));
+                    }
+                } catch {
+                    KillProcess(process);
+                    throw;
                 }
-                process?.Kill();
+
+                KillProcess(process);
+            }
+        }
+
+        private static void KillProcess(Process process) {
+            try {
+                process.Kill();
+                // ReSharper disable once EmptyGeneralCatchClause
+            } catch {
             }
         }
     }
