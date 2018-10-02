@@ -1,11 +1,11 @@
 ﻿using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Sample.Test.Controllers {
+namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Controllers {
     [DvinExceptionFilter]
     public class HomeController : Controller {
         public IActionResult Index() {
-            return View();
+            return Ok("Hello World");
         }
     }
 }

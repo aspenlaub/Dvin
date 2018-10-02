@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Sample.Test {
+namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp {
     public class Startup {
         public Startup(IConfiguration configuration) {
             Configuration = configuration;

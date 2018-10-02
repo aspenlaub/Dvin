@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Sample.Test {
+namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp {
     public class Program {
         public static void Main(string[] args) {
             var builder = CreateWebHostBuilder(args);

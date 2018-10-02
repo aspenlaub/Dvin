@@ -16,10 +16,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Sample\**" />
+    <Compile Remove="TestApp\**" />
     <Compile Remove="Test\**" />
     <EmbeddedResource Remove="Sample\**" />
+    <EmbeddedResource Remove="TestApp\**" />
     <EmbeddedResource Remove="Test\**" />
     <None Remove="Sample\**" />
+    <None Remove="TestApp\**" />
     <None Remove="Test\**" />
   </ItemGroup>
   <ItemGroup>
