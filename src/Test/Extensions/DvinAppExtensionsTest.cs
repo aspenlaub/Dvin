@@ -181,7 +181,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
                             var response = await client.GetAsync(url);
                             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
                             var content = await response.Content.ReadAsStringAsync();
-                            Assert.IsTrue(content.Contains("Hello World"));
+                            Assert.IsTrue(content.Contains("Hello World says your dvin app"));
                         }
                     } catch {
                         KillProcess(process);

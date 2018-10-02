@@ -5,7 +5,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Controllers {
     [DvinExceptionFilter]
     public class HomeController : Controller {
         public IActionResult Index() {
-            return Ok("Hello World");
+            return Ok("Hello World says your dvin app");
         }
     }
 }
