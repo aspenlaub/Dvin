@@ -14,7 +14,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'" />
   <ItemGroup>
     <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.Dvin" Version="1.0.6849.35549" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.5" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />
