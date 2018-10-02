@@ -3,7 +3,6 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
 using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
 using Microsoft.AspNetCore.Hosting;
-
 // ReSharper disable UnusedMember.Global
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
