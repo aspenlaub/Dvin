@@ -174,19 +174,17 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
                 Assert.IsNotNull(process);
                 var url = $"http://localhost:{dvinApp.Port}/Home";
                 await Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
-                if (!errorsAndInfos.Errors.Any(e => e.Contains("not possible to find any compatible framework version"))) {
-                    Assert.IsTrue(dvinApp.IsPortListenedTo(), string.Join("\r\n", errorsAndInfos.Errors));
-                    try {
-                        using (var client = new HttpClient()) {
-                            var response = await client.GetAsync(url);
-                            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-                            var content = await response.Content.ReadAsStringAsync();
-                            Assert.IsTrue(content.Contains("Hello World says your dvin app"));
-                        }
-                    } catch {
-                        KillProcess(process);
-                        throw;
+                Assert.IsTrue(dvinApp.IsPortListenedTo(), string.Join("\r\n", errorsAndInfos.Errors));
+                try {
+                    using (var client = new HttpClient()) {
+                        var response = await client.GetAsync(url);
+                        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                        var content = await response.Content.ReadAsStringAsync();
+                        Assert.IsTrue(content.Contains("Hello World says your dvin app"));
                     }
+                } catch {
+                    KillProcess(process);
+                    throw;
                 }
 
                 KillProcess(process);
