@@ -103,7 +103,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
 
             var sourceChangedAt = sourceFiles.Max(f => fileSystemService.LastWriteTime(f));
             var publishedAt = publishedFiles.Max(f => fileSystemService.LastWriteTime(f));
-            return publishedAt > sourceChangedAt;
+            return publishedAt > sourceChangedAt.AddSeconds(1);
         }
 
         private static List<string> PublishedFiles(IFileSystemService fileSystemService, DvinAppFolder dvinAppFolder) {

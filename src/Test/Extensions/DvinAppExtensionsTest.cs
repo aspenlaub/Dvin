@@ -150,7 +150,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanStartSampleApp() {
             var repository = new DvinRepository();
             var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId);
