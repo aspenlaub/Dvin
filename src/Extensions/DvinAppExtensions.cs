@@ -135,6 +135,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 processStarter.WaitForExit(process);
             }
 
+            if (errorsAndInfos.Infos.Any(i => i.Contains("Could not copy"))) {
+                errorsAndInfos.Errors.Add($"The publish proceess could not copy files for {machineId} and dvin app {dvinApp.Id}, make sure dotnet and the little things are not running");
+                return;
+            }
+
             publishedFiles = PublishedFiles(fileSystemService, dvinAppFolder);
             if (!publishedFiles.Any() || lastPublishedAt >= publishedFiles.Max(f => fileSystemService.LastWriteTime(f))) {
                 errorsAndInfos.Errors.Add($"Nothing was published for {machineId} and dvin app {dvinApp.Id}");
