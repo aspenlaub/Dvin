@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes {
+    /// <summary>
+    /// Usage example: .AddMvc(config => config.Filters.Add(new DvinExceptionFilterAttribute()))
+    /// </summary>
     public class DvinExceptionFilterAttribute : ExceptionFilterAttribute {
         protected static IFolder ExceptionLogFolder;
 
