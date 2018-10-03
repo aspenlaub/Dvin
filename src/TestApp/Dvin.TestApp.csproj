@@ -13,7 +13,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'" />
   <ItemGroup>
-    <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.Dvin" Version="1.0.6849.35549" />
+    <Compile Remove="Dvin.TestApp.Test\**" />
+    <Compile Remove="Test\**" />
+    <Content Remove="Dvin.TestApp.Test\**" />
+    <Content Remove="Test\**" />
+    <EmbeddedResource Remove="Dvin.TestApp.Test\**" />
+    <EmbeddedResource Remove="Test\**" />
+    <None Remove="Dvin.TestApp.Test\**" />
+    <None Remove="Test\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.Dvin" Version="1.0.6849.36241" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.4" />
   </ItemGroup>
   <ItemGroup>
