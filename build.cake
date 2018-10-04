@@ -225,7 +225,11 @@ Task("RunTestsOnDebugArtifacts")
             VSTest(outputPath + "*.Test.dll", new VSTestSettings() { Logger = "trx", InIsolation = true });
           }
         } else {
-          var dotNetCoreTestSettings = new DotNetCoreTestSettings { Configuration = "Debug", NoRestore = true, NoBuild = true };
+          var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
+          var dotNetCoreTestSettings = new DotNetCoreTestSettings {
+            Configuration = "Debug", NoRestore = true, NoBuild = true,
+            ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + logFileName + "\"")
+          };
           DotNetCoreTest(projectFile.FullPath, dotNetCoreTestSettings);
       }
     }
@@ -280,7 +284,11 @@ Task("RunTestsOnReleaseArtifacts")
             VSTest(outputPath + "*.Test.dll", new VSTestSettings() { Logger = "trx", InIsolation = true });
           }
         } else {
-          var dotNetCoreTestSettings = new DotNetCoreTestSettings { Configuration = "Release", NoRestore = true, NoBuild = true };
+          var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
+          var dotNetCoreTestSettings = new DotNetCoreTestSettings { 
+            Configuration = "Release", NoRestore = true, NoBuild = true,
+            ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + logFileName + "\"")
+          };
           DotNetCoreTest(projectFile.FullPath, dotNetCoreTestSettings);
       }
     }
