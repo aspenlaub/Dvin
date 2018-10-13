@@ -120,17 +120,19 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             var machineId = Environment.MachineName;
             var sut = new DvinApp();
             const string solutionFolder = @"D:\Users\Alice\GraspNetCore";
+            const string releaseFolder = @"D:\Users\Alice\GraspNetCoreBin\Release";
             const string publishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish";
-            sut.DvinAppFolders.Add(new DvinAppFolder { MachineId = machineId, SolutionFolder = solutionFolder, PublishFolder = publishFolder });
+            sut.DvinAppFolders.Add(new DvinAppFolder { MachineId = machineId, SolutionFolder = solutionFolder, ReleaseFolder = releaseFolder, PublishFolder = publishFolder });
             fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns<IFolder, string, SearchOption>((f, p, s) => {
                 return new List<string> { f.FullName + @"\something.json" };
             });
+            var now = DateTime.Now;
             fileSystemServiceMock.Setup(f => f.LastWriteTime(It.IsAny<string>())).Returns<string>(f => {
-                return f.StartsWith(publishFolder) ? DateTime.Now : DateTime.Now.AddMinutes(1);
+                return f.StartsWith(publishFolder) ? now : now.AddMinutes(1);
             });
             Assert.IsFalse(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
             fileSystemServiceMock.Setup(f => f.LastWriteTime(It.IsAny<string>())).Returns<string>(f => {
-                return f.StartsWith(publishFolder) ? DateTime.Now.AddMinutes(1) : DateTime.Now;
+                return f.StartsWith(publishFolder) || f.StartsWith(releaseFolder) ? now.AddMinutes(1) : now;
             });
             Assert.IsTrue(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
         }

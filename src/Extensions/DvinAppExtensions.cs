@@ -89,20 +89,19 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             return errorsAndInfos.Infos.Any(i => i.Contains("TCP") && i.Contains("LISTENING") && i.Contains($":{dvinApp.Port} "));
         }
 
-        public static bool HasAppBeenPublishedAfterLatestSourceChanges(this IDvinApp dvinApp, string machineId,
-            IFileSystemService fileSystemService) {
+        public static bool HasAppBeenPublishedAfterLatestSourceChanges(this IDvinApp dvinApp, string machineId, IFileSystemService fileSystemService) {
             var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
-            return dvinAppFolder != null && HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinAppFolder.SolutionFolder));
+            return dvinAppFolder != null && HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinAppFolder.SolutionFolder), new Folder(dvinAppFolder.PublishFolder));
         }
 
         public static bool HasAppBeenBuiltAfterLatestSourceChanges(this IDvinApp dvinApp, string machineId,
             IFileSystemService fileSystemService) {
             var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
-            return dvinAppFolder != null && HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinAppFolder.ReleaseFolder));
+            return dvinAppFolder != null && HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinAppFolder.SolutionFolder), new Folder(dvinAppFolder.ReleaseFolder));
         }
 
-        private static bool HaveArtifactsBeenProducedAfterLatestSourceChanges(IFileSystemService fileSystemService, IFolder artifactsFolder) {
-            var sourceFiles = fileSystemService.ListFilesInDirectory(artifactsFolder, "*.*", SearchOption.AllDirectories)
+        private static bool HaveArtifactsBeenProducedAfterLatestSourceChanges(IFileSystemService fileSystemService, IFolder sourceFolder, IFolder artifactsFolder) {
+            var sourceFiles = fileSystemService.ListFilesInDirectory(sourceFolder, "*.*", SearchOption.AllDirectories)
                 .Where(f => f.EndsWith("cs") || f.EndsWith("csproj") || f.EndsWith("cshtml") || f.EndsWith("json"))
                 .ToList();
             if (!sourceFiles.Any()) { return false; }
