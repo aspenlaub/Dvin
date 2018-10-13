@@ -102,8 +102,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
 
         private static bool HaveArtifactsBeenProducedAfterLatestSourceChanges(IFileSystemService fileSystemService, IFolder sourceFolder, IFolder artifactsFolder) {
             var sourceFiles = fileSystemService.ListFilesInDirectory(sourceFolder, "*.*", SearchOption.AllDirectories)
-                .Where(f => f.EndsWith("cs") || f.EndsWith("csproj") || f.EndsWith("cshtml") || f.EndsWith("json"))
-                .ToList();
+                .Where(f => !f.Contains(@"\bin\") && !f.Contains(@"\obj\")
+                      && (f.EndsWith("cs") || f.EndsWith("csproj") || f.EndsWith("cshtml") || f.EndsWith("json"))
+                ).ToList();
             if (!sourceFiles.Any()) { return false; }
 
             var publishedFiles = Artifacts(fileSystemService, artifactsFolder);
