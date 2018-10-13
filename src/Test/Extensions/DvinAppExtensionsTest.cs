@@ -141,6 +141,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             var fileSystemService = new FileSystemService();
             var apps = await repository.LoadAsync();
             foreach (var app in apps) {
+                if (!app.HasAppBeenBuiltAfterLatestSourceChanges(Environment.MachineName, fileSystemService)) { continue; }
+
                 var errorsAndInfos = new ErrorsAndInfos();
                 app.Publish(fileSystemService, errorsAndInfos);
                 if (errorsAndInfos.Errors.Any(e => e.StartsWith("No folders specified"))) { continue; }

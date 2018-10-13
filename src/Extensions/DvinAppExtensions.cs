@@ -89,16 +89,25 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             return errorsAndInfos.Infos.Any(i => i.Contains("TCP") && i.Contains("LISTENING") && i.Contains($":{dvinApp.Port} "));
         }
 
-        public static bool HasAppBeenPublishedAfterLatestSourceChanges(this IDvinApp dvinApp, string machineId, IFileSystemService fileSystemService) {
+        public static bool HasAppBeenPublishedAfterLatestSourceChanges(this IDvinApp dvinApp, string machineId,
+            IFileSystemService fileSystemService) {
             var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
-            if (dvinAppFolder == null) { return false; }
+            return dvinAppFolder != null && HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinAppFolder.SolutionFolder));
+        }
 
-            var sourceFiles = fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.SolutionFolder), "*.*", SearchOption.AllDirectories)
+        public static bool HasAppBeenBuiltAfterLatestSourceChanges(this IDvinApp dvinApp, string machineId,
+            IFileSystemService fileSystemService) {
+            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
+            return dvinAppFolder != null && HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinAppFolder.ReleaseFolder));
+        }
+
+        private static bool HaveArtifactsBeenProducedAfterLatestSourceChanges(IFileSystemService fileSystemService, IFolder artifactsFolder) {
+            var sourceFiles = fileSystemService.ListFilesInDirectory(artifactsFolder, "*.*", SearchOption.AllDirectories)
                 .Where(f => f.EndsWith("cs") || f.EndsWith("csproj") || f.EndsWith("cshtml") || f.EndsWith("json"))
                 .ToList();
             if (!sourceFiles.Any()) { return false; }
 
-            var publishedFiles = PublishedFiles(fileSystemService, dvinAppFolder);
+            var publishedFiles = Artifacts(fileSystemService, artifactsFolder);
             if (!publishedFiles.Any()) { return false; }
 
             var sourceChangedAt = sourceFiles.Max(f => fileSystemService.LastWriteTime(f));
@@ -106,8 +115,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             return publishedAt > sourceChangedAt.AddSeconds(1);
         }
 
-        private static List<string> PublishedFiles(IFileSystemService fileSystemService, DvinAppFolder dvinAppFolder) {
-            return fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.PublishFolder), "*.*", SearchOption.AllDirectories)
+        private static List<string> Artifacts(IFileSystemService fileSystemService, IFolder artifactsFolder) {
+            return fileSystemService.ListFilesInDirectory(artifactsFolder, "*.*", SearchOption.AllDirectories)
                 .Where(f => f.EndsWith("dll") || f.EndsWith("config") || f.EndsWith("dll") || f.EndsWith("exe") || f.EndsWith("json"))
                 .ToList();
         }
@@ -120,7 +129,12 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return;
             }
 
-            var publishedFiles = PublishedFiles(fileSystemService, dvinAppFolder);
+            if (!dvinApp.HasAppBeenBuiltAfterLatestSourceChanges(machineId, fileSystemService)) {
+                errorsAndInfos.Errors.Add($"No release build for dvin app {dvinApp.Id} on {machineId}");
+                return;
+            }
+
+            var publishedFiles = Artifacts(fileSystemService, new Folder(dvinAppFolder.PublishFolder));
             var lastPublishedAt = publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
 
             var projectFile = fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.SolutionFolder), "*.csproj", SearchOption.AllDirectories).FirstOrDefault(f => f.EndsWith(dvinApp.Id + ".csproj"));
@@ -140,7 +154,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return;
             }
 
-            publishedFiles = PublishedFiles(fileSystemService, dvinAppFolder);
+            publishedFiles = Artifacts(fileSystemService, new Folder(dvinAppFolder.PublishFolder));
             if (!publishedFiles.Any() || lastPublishedAt >= publishedFiles.Max(f => fileSystemService.LastWriteTime(f))) {
                 errorsAndInfos.Errors.Add($"Nothing was published for {machineId} and dvin app {dvinApp.Id}");
             }

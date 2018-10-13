@@ -8,6 +8,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
         [XmlAttribute("solutionfolder")]
         public string SolutionFolder { get; set; }
 
+        [XmlAttribute("releasefolder")]
+        public string ReleaseFolder { get; set; }
+
         [XmlAttribute("publishfolder")]
         public string PublishFolder { get; set; }
 
