@@ -15,7 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
     [TestClass]
     public class TvinstControllerTest {
-        [TestMethod, Ignore]
+        [TestMethod] // Ignore
         public async Task CanCreateTestClient() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home";
@@ -29,7 +29,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod] // Ignore
         public async Task CanHandleCrashes() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home/Crash";
