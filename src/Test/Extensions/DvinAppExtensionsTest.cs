@@ -166,6 +166,12 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             dvinApp.ValidatePubXml(errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
 
+            #if DEBUG
+            if (!dvinApp.HasAppBeenBuiltAfterLatestSourceChanges(Environment.MachineName, fileSystemService)) {
+                return;
+            }
+            #endif
+
             if (!dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(Environment.MachineName, fileSystemService)) {
                 dvinApp.Publish(fileSystemService, errorsAndInfos);
                 Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
