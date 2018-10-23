@@ -84,7 +84,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             var processStarter = new ProcessStarter();
             var errorsAndInfos = new ErrorsAndInfos();
             using (var process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos)) {
-                processStarter.WaitForExit(process);
+                if (process != null) {
+                    processStarter.WaitForExit(process);
+                }
             }
 
             var ports = new List<int>();

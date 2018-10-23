@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Interfaces;
 
@@ -9,6 +10,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
         private readonly IDictionary<Process, AutoResetEvent> vErrorWaitHandles = new Dictionary<Process, AutoResetEvent>();
 
         public Process StartProcess(string executableFullName, string arguments, string workingFolder, IErrorsAndInfos errorsAndInfos) {
+            if (executableFullName.Contains(@"\") && !File.Exists(executableFullName)) {
+                errorsAndInfos.Errors.Add($"Executable \"{executableFullName}\" not found");
+                return null;
+            }
+
             var process = CreateProcess(executableFullName, arguments, workingFolder);
             var outputWaitHandle = new AutoResetEvent(false);
             var errorWaitHandle = new AutoResetEvent(false);

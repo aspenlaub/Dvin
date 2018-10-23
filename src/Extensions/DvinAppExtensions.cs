@@ -84,7 +84,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             var processStarter = new ProcessStarter();
             var errorsAndInfos = new ErrorsAndInfos();
             using (var process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos)) {
-                processStarter.WaitForExit(process);
+                if (process != null) { 
+                    processStarter.WaitForExit(process);
+                }
             }
             return errorsAndInfos.Infos.Any(i => i.Contains("TCP") && i.Contains("LISTENING") && i.Contains($":{dvinApp.Port} "));
         }
@@ -146,7 +148,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             var processStarter = new ProcessStarter();
             var arguments = $"publish \"{projectFile}\" -c Release --no-build --no-restore -o \"{dvinAppFolder.PublishFolder}\"";
             using (var process = processStarter.StartProcess("dotnet", arguments, "", errorsAndInfos)) {
-                processStarter.WaitForExit(process);
+                if (process != null) { 
+                    processStarter.WaitForExit(process);
+                }
             }
 
             if (errorsAndInfos.Infos.Any(i => i.Contains("Could not copy"))) {
