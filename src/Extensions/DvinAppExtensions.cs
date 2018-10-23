@@ -31,6 +31,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return;
             }
 
+            if (!fileSystemService.FolderExists(dvinAppFolder.SolutionFolder)) {
+                errorsAndInfos.Errors.Add($"Folder \"{dvinAppFolder.SolutionFolder}\" not found");
+                return;
+            }
+
             var solutionFolder = new Folder(dvinAppFolder.SolutionFolder);
             var pubXmlFiles =  fileSystemService.ListFilesInDirectory(solutionFolder, "*.pubxml", SearchOption.AllDirectories);
             if (pubXmlFiles.Count != 1) {
@@ -136,6 +141,16 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return;
             }
 
+            if (!fileSystemService.FolderExists(dvinAppFolder.PublishFolder)) {
+                errorsAndInfos.Errors.Add($"Folder \"{dvinAppFolder.PublishFolder}\" not found");
+                return;
+            }
+
+            if (!fileSystemService.FolderExists(dvinAppFolder.SolutionFolder)) {
+                errorsAndInfos.Errors.Add($"Folder \"{dvinAppFolder.SolutionFolder}\" not found");
+                return;
+            }
+
             var publishedFiles = Artifacts(fileSystemService, new Folder(dvinAppFolder.PublishFolder));
             var lastPublishedAt = publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
 
@@ -164,7 +179,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             }
         }
 
-        public static Process Start(this IDvinApp dvinApp, IErrorsAndInfos errorsAndInfos) {
+        public static Process Start(this IDvinApp dvinApp, IFileSystemService fileSystemService, IErrorsAndInfos errorsAndInfos) {
             if (dvinApp.IsPortListenedTo()) {
                 errorsAndInfos.Errors.Add($"Another process already listens to port {dvinApp.Port}");
                 return null;
@@ -174,6 +189,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
             if (dvinAppFolder == null) {
                 errorsAndInfos.Errors.Add($"No folders specified for {machineId} in secret {dvinApp.Id} dvin app");
+                return null;
+            }
+
+            if (!fileSystemService.FolderExists(dvinAppFolder.PublishFolder)) {
+                errorsAndInfos.Errors.Add($"Folder \"{dvinAppFolder.PublishFolder}\" not found");
                 return null;
             }
 

@@ -29,6 +29,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             const string publishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish";
             sut.DvinAppFolders.Add(new DvinAppFolder { MachineId = machineId, SolutionFolder = solutionFolder, PublishFolder = publishFolder });
             fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns(new List<string>());
+            fileSystemServiceMock.Setup(f => f.FolderExists(It.IsAny<string>())).Returns(true);
             var errorsAndInfos = new ErrorsAndInfos();
             sut.ValidatePubXml(notTheMachineId, fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith($"No folders specified for {notTheMachineId}")));
@@ -65,7 +66,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
             errorsAndInfos = new ErrorsAndInfos();
             sut.ValidatePubXml(errorsAndInfos);
-            Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith("Found 0 pubxml files")));
+            Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith("Folder") && e.EndsWith("not found")));
         }
 
         private string ComposePubXml(string publishUrl) {
@@ -181,7 +182,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
             Assert.IsTrue(dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(Environment.MachineName, fileSystemService));
 
-            using (var process = dvinApp.Start(errorsAndInfos)) {
+            using (var process = dvinApp.Start(fileSystemService, errorsAndInfos)) {
                 Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
                 Assert.IsNotNull(process);
                 var url = $"http://localhost:{dvinApp.Port}/Home";

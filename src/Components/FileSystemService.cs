@@ -19,5 +19,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
         public DateTime LastWriteTime(string fileName) {
             return File.GetLastWriteTime(fileName);
         }
+
+        public bool FolderExists(string folderName) {
+            return Directory.Exists(folderName);
+        }
     }
 }
