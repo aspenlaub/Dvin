@@ -8,5 +8,6 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces {
         IList<string> ListFilesInDirectory(IFolder folder, string pattern, SearchOption searchOption);
         string ReadAllText(string fileName);
         DateTime LastWriteTime(string fileName);
+        bool FolderExists(string folderName);
     }
 }

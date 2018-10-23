@@ -15,6 +15,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
                 return null;
             }
 
+            if (!string.IsNullOrWhiteSpace(workingFolder) && !Directory.Exists(workingFolder)) {
+                errorsAndInfos.Errors.Add($"Folder \"{workingFolder}\" not found");
+                return null;
+            }
+
             var process = CreateProcess(executableFullName, arguments, workingFolder);
             var outputWaitHandle = new AutoResetEvent(false);
             var errorWaitHandle = new AutoResetEvent(false);
