@@ -1,6 +1,6 @@
 ﻿using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 

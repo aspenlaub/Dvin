@@ -4,8 +4,8 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Extensions;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
     public class ExceptionSaver {

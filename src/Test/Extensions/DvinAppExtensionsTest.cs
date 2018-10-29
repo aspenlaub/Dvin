@@ -11,8 +11,8 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

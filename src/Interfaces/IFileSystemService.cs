@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces {
     public interface IFileSystemService {

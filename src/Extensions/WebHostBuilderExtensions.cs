@@ -1,7 +1,7 @@
 ﻿using System;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Microsoft.AspNetCore.Hosting;
 // ReSharper disable UnusedMember.Global
 

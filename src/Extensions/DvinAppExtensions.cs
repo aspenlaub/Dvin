@@ -9,8 +9,8 @@ using System.Xml.XPath;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
     public static class DvinAppExtensions {

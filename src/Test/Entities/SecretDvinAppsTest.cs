@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Components;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities {

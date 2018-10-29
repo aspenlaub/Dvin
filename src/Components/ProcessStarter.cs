@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
     public class ProcessStarter {

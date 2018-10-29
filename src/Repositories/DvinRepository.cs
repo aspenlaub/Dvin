@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Components;
-using Aspenlaub.Net.GitHub.CSharp.PeghStandard.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories {
     public class DvinRepository : IDvinRepository {
