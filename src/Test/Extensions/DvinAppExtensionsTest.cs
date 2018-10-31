@@ -152,6 +152,10 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
                 app.Publish(fileSystemService, errorsAndInfos);
                 if (errorsAndInfos.Errors.Any(e => e.StartsWith("No folders specified"))) { continue; }
 
+                if (errorsAndInfos.Errors.Any(e => e.Contains("The publish proceess could not copy files"))) {
+                    Assert.Inconclusive(string.Join("\r\n", errorsAndInfos.Errors));
+                }
+
                 Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
                 break;
             }
