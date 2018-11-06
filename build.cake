@@ -44,6 +44,15 @@ var projectLogic = componentProvider.ProjectLogic;
 var projectFactory = componentProvider.ProjectFactory;
 var solutionFileFullName = (MakeAbsolute(DirectoryPath.FromString("./src")).FullPath + '\\' + solutionId + ".sln").Replace('/', '\\');
 
+var createAndPushPackages = true;
+if (solutionSpecialSettingsDictionary.ContainsKey("CreateAndPushPackages")) {
+  var createAndPushPackagesText = solutionSpecialSettingsDictionary["CreateAndPushPackages"].ToUpper();
+  if (createAndPushPackagesText != "TRUE" && createAndPushPackagesText != "FALSE") {
+    throw new Exception("Setting CreateAndPushPackages must be true or false");
+  }
+  createAndPushPackages = createAndPushPackagesText == "TRUE";
+}
+
 Setup(ctx => { 
   Information("Repository folder is: " + repositoryFolder);
   Information("Solution is: " + solution);
@@ -310,7 +319,7 @@ Task("CopyReleaseArtifacts")
   });
 
 Task("CreateNuGetPackage")
-  .WithCriteria(() => currentGitBranch.FriendlyName == "master")
+  .WithCriteria(() => currentGitBranch.FriendlyName == "master" && createAndPushPackages)
   .Description("Create nuget package in the master Release binaries folder")
   .Does(() => {
     var projectErrorsAndInfos = new ErrorsAndInfos();
@@ -349,7 +358,7 @@ Task("CreateNuGetPackage")
   });
 
 Task("PushNuGetPackage")
-  .WithCriteria(() => currentGitBranch.FriendlyName == "master")
+  .WithCriteria(() => currentGitBranch.FriendlyName == "master" && createAndPushPackages)
   .Description("Push nuget package")
   .Does(async () => {
     var nugetPackageToPushFinder = componentProvider.NugetPackageToPushFinder;
