@@ -89,7 +89,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             var processStarter = new ProcessStarter();
             var errorsAndInfos = new ErrorsAndInfos();
             using (var process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos)) {
-                if (process != null) { 
+                if (process != null) {
                     processStarter.WaitForExit(process);
                 }
             }
@@ -124,11 +124,15 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
 
         private static List<string> Artifacts(IFileSystemService fileSystemService, IFolder artifactsFolder) {
             return fileSystemService.ListFilesInDirectory(artifactsFolder, "*.*", SearchOption.AllDirectories)
-                .Where(f => f.EndsWith("dll") || f.EndsWith("config") || f.EndsWith("dll") || f.EndsWith("exe") || f.EndsWith("json"))
+                .Where(f => !f.Contains(@"\%") && (f.EndsWith("dll") || f.EndsWith("config") || f.EndsWith("dll") || f.EndsWith("exe") || f.EndsWith("json")))
                 .ToList();
         }
 
         public static void Publish(this IDvinApp dvinApp, IFileSystemService fileSystemService, IErrorsAndInfos errorsAndInfos) {
+            Publish(dvinApp, fileSystemService, false, errorsAndInfos);
+        }
+
+        public static void Publish(this IDvinApp dvinApp, IFileSystemService fileSystemService, bool ignoreMissingReleaseBuild, IErrorsAndInfos errorsAndInfos) {
             var machineId = Environment.MachineName;
             var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
             if (dvinAppFolder == null) {
@@ -136,7 +140,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return;
             }
 
-            if (!dvinApp.HasAppBeenBuiltAfterLatestSourceChanges(machineId, fileSystemService)) {
+            if (!ignoreMissingReleaseBuild && !dvinApp.HasAppBeenBuiltAfterLatestSourceChanges(machineId, fileSystemService)) {
                 errorsAndInfos.Errors.Add($"No release build for dvin app {dvinApp.Id} on {machineId}");
                 return;
             }
@@ -154,6 +158,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             var publishedFiles = Artifacts(fileSystemService, new Folder(dvinAppFolder.PublishFolder));
             var lastPublishedAt = publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
 
+            MakeCopiesOfAssemblies(new Folder(dvinAppFolder.PublishFolder), fileSystemService);
+
             var projectFile = fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.SolutionFolder), "*.csproj", SearchOption.AllDirectories).FirstOrDefault(f => f.EndsWith(dvinApp.Id + ".csproj"));
             if (projectFile == null) {
                 errorsAndInfos.Errors.Add($"No project file found for {machineId} and dvin app {dvinApp.Id} (must end with {dvinApp.Id}.csproj)");
@@ -161,9 +167,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             }
 
             var processStarter = new ProcessStarter();
-            var arguments = $"publish \"{projectFile}\" -c Release --no-build --no-restore -o \"{dvinAppFolder.PublishFolder}\"";
+            var arguments = $"publish \"{projectFile}\" -c Release --no-restore -o \"{dvinAppFolder.PublishFolder}\"";
             using (var process = processStarter.StartProcess("dotnet", arguments, "", errorsAndInfos)) {
-                if (process != null) { 
+                if (process != null) {
                     processStarter.WaitForExit(process);
                 }
             }
@@ -177,6 +183,45 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             if (!publishedFiles.Any() || lastPublishedAt >= publishedFiles.Max(f => fileSystemService.LastWriteTime(f))) {
                 errorsAndInfos.Errors.Add($"Nothing was published for {machineId} and dvin app {dvinApp.Id}");
             }
+
+            DeleteUnusedFileCopies(new Folder(dvinAppFolder.PublishFolder), fileSystemService);
+        }
+
+        private static void MakeCopiesOfAssemblies(IFolder publishFolder, IFileSystemService fileSystemService) {
+            DeleteUnusedFileCopies(publishFolder, fileSystemService);
+
+            var files = fileSystemService.ListFilesInDirectory(publishFolder, "*.dll", SearchOption.TopDirectoryOnly).ToList();
+            files.AddRange(fileSystemService.ListFilesInDirectory(publishFolder, "*.exe", SearchOption.TopDirectoryOnly).ToList());
+            foreach (var fileName in files.Where(f => !f.Contains(@"\%"))) {
+                var i = 0;
+                string freshNameOne, freshNameTwo;
+                do {
+                    freshNameOne = RenamedFile(fileName, i);
+                    freshNameTwo = RenamedFile(fileName, i + 1);
+                    i += 1;
+                } while (files.Contains(freshNameOne) || files.Contains(freshNameTwo));
+
+                fileSystemService.CopyFile(fileName, freshNameTwo);
+                fileSystemService.MoveFile(fileName, freshNameOne);
+                fileSystemService.MoveFile(freshNameTwo, fileName);
+            }
+
+            DeleteUnusedFileCopies(publishFolder, fileSystemService);
+        }
+
+        private static void DeleteUnusedFileCopies(IFolder publishFolder, IFileSystemService fileSystemService) {
+            var files = fileSystemService.ListFilesInDirectory(publishFolder, "%*.dll", SearchOption.TopDirectoryOnly).ToList();
+            foreach (var file in files) {
+                try {
+                    fileSystemService.DeleteFile(file);
+                    // ReSharper disable once EmptyGeneralCatchClause
+                } catch { }
+            }
+        }
+
+        private static string RenamedFile(string fileName, int counter) {
+            var path = fileName.Substring(0, fileName.LastIndexOf('\\') + 1);
+            return $"{path}%{counter}%{fileName.Substring(path.Length)}";
         }
 
         public static Process Start(this IDvinApp dvinApp, IFileSystemService fileSystemService, IErrorsAndInfos errorsAndInfos) {
@@ -200,6 +245,14 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             var runner = new ProcessStarter();
             var process = runner.StartProcess("dotnet", dvinApp.Executable, dvinAppFolder.PublishFolder, errorsAndInfos);
             return process;
+        }
+
+        public static DateTime LastPublishedAt(this IDvinApp dvinApp, IFileSystemService fileSystemService) {
+            var dvinAppFolder = dvinApp.FolderOnMachine(Environment.MachineName);
+            if (dvinAppFolder == null) {  return DateTime.MinValue; }
+
+            var publishedFiles = Artifacts(fileSystemService, new Folder(dvinAppFolder.PublishFolder));
+            return publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
         }
     }
 }

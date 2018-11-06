@@ -23,5 +23,17 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
         public bool FolderExists(string folderName) {
             return Directory.Exists(folderName);
         }
+
+        public void DeleteFile(string fileName) {
+            File.Delete(fileName);
+        }
+
+        public void CopyFile(string fromFileName, string toFileName) {
+            File.Copy(fromFileName, toFileName);
+        }
+
+        public void MoveFile(string fromFileName, string toFileName) {
+            File.Move(fromFileName, toFileName);
+        }
     }
 }

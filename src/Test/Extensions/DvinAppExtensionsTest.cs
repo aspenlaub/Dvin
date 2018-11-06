@@ -152,16 +152,12 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
                 app.Publish(fileSystemService, errorsAndInfos);
                 if (errorsAndInfos.Errors.Any(e => e.StartsWith("No folders specified"))) { continue; }
 
-                if (errorsAndInfos.Errors.Any(e => e.Contains("The publish proceess could not copy files"))) {
-                    Assert.Inconclusive(string.Join("\r\n", errorsAndInfos.Errors));
-                }
-
                 Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
                 break;
             }
         }
 
-        [TestMethod] // Ignore
+        [TestMethod]
         public async Task CanStartSampleApp() {
             var repository = new DvinRepository();
             var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId);
@@ -215,5 +211,54 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             } catch {
             }
         }
+
+        [TestMethod]
+        public async Task SampleAppCanPublishItselfWhileRunning() {
+            var repository = new DvinRepository();
+            var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId);
+            Assert.IsNotNull(dvinApp);
+
+            var fileSystemService = new FileSystemService();
+            var errorsAndInfos = new ErrorsAndInfos();
+
+            dvinApp.ValidatePubXml(errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+
+            var timeBeforePublishing = DateTime.Now;
+
+            dvinApp.Publish(fileSystemService, true, errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+
+            var lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
+            Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
+
+            /*
+            using (var process = dvinApp.Start(fileSystemService, errorsAndInfos)) {
+                Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+                Assert.IsNotNull(process);
+                var url = $"http://localhost:{dvinApp.Port}/Publish";
+                await Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
+                Assert.IsTrue(dvinApp.IsPortListenedTo(), string.Join("\r\n", errorsAndInfos.Errors));
+                try {
+                    using (var client = new HttpClient()) {
+                        timeBeforePublishing = DateTime.Now;
+                        var response = await client.GetAsync(url);
+                        var content = await response.Content.ReadAsStringAsync();
+                        Assert.AreNotEqual(HttpStatusCode.InternalServerError, response.StatusCode, content);
+                        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                        Assert.IsTrue(content.Contains("Your dvin app just published itself"));
+                        lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
+                        Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
+                    }
+                } catch {
+                    KillProcess(process);
+                    throw;
+                }
+
+                KillProcess(process);
+            }
+            */
+        }
+
     }
 }

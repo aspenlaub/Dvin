@@ -15,7 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
     [TestClass]
     public class TvinstControllerTest {
-        [TestMethod] // Ignore
+        [TestMethod]
         public async Task CanCreateTestClient() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home";
@@ -29,7 +29,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
             }
         }
 
-        [TestMethod] // Ignore
+        [TestMethod]
         public async Task CanHandleCrashes() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home/Crash";
@@ -75,6 +75,20 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
 
             return Directory.GetFiles(dvinAppFolder.ExceptionLogFolder, "Ex*.txt", SearchOption.TopDirectoryOnly)
                 .Where(f => File.ReadAllText(f).Contains("This is a deliberate crash")).ToList();
+        }
+
+        [TestMethod, Ignore]
+        public async Task CanPublishMyself() {
+            var dvinApp = await GetDvinApp();
+            var url = $"http://localhost:{dvinApp.Port}/Publish";
+
+            using (var client = CreateHttpClient()) {
+                Assert.IsNotNull(client);
+                var response = await client.GetAsync(url);
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                var content = await response.Content.ReadAsStringAsync();
+                Assert.IsTrue(content.Contains("Hello World says your dvin app"));
+            }
         }
     }
 }
