@@ -21,7 +21,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Controllers {
             var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId);
             var fileSystemService = new FileSystemService();
             var errorsAndInfos = new ErrorsAndInfos();
-            dvinApp.Publish(fileSystemService, errorsAndInfos);
+            dvinApp.Publish(fileSystemService, true, errorsAndInfos);
             return errorsAndInfos.AnyErrors()
                 ? StatusCode((int)HttpStatusCode.InternalServerError, string.Format("\r\n", errorsAndInfos.Errors))
                 : Ok("Your dvin app just published itself");

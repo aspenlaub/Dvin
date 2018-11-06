@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
@@ -77,17 +78,21 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
                 .Where(f => File.ReadAllText(f).Contains("This is a deliberate crash")).ToList();
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanPublishMyself() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Publish";
+            var fileSystemService = new FileSystemService();
 
             using (var client = CreateHttpClient()) {
                 Assert.IsNotNull(client);
+                var timeBeforePublishing = DateTime.Now;
                 var response = await client.GetAsync(url);
                 Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
                 var content = await response.Content.ReadAsStringAsync();
-                Assert.IsTrue(content.Contains("Hello World says your dvin app"));
+                Assert.IsTrue(content.Contains("Your dvin app just published itself"));
+                var lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
+                Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
             }
         }
     }

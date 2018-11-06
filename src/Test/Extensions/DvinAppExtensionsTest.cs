@@ -232,7 +232,6 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             var lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
             Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
 
-            /*
             using (var process = dvinApp.Start(fileSystemService, errorsAndInfos)) {
                 Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
                 Assert.IsNotNull(process);
@@ -257,7 +256,6 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
                 KillProcess(process);
             }
-            */
         }
 
     }
