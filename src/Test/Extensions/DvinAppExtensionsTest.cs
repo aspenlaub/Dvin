@@ -12,6 +12,7 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Helpers;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -186,7 +187,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
                 Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
                 Assert.IsNotNull(process);
                 var url = $"http://localhost:{dvinApp.Port}/Home";
-                await Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
+                Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
                 Assert.IsTrue(dvinApp.IsPortListenedTo(), string.Join("\r\n", errorsAndInfos.Errors));
                 try {
                     using (var client = new HttpClient()) {
@@ -236,7 +237,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
                 Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
                 Assert.IsNotNull(process);
                 var url = $"http://localhost:{dvinApp.Port}/Publish";
-                await Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
+                Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
                 Assert.IsTrue(dvinApp.IsPortListenedTo(), string.Join("\r\n", errorsAndInfos.Errors));
                 try {
                     using (var client = new HttpClient()) {
