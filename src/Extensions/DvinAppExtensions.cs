@@ -175,7 +175,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             }
 
             if (errorsAndInfos.Infos.Any(i => i.Contains("Could not copy"))) {
-                errorsAndInfos.Errors.Add($"The publish proceess could not copy files for {machineId} and dvin app {dvinApp.Id}, make sure dotnet and the little things are not running");
+                errorsAndInfos.Errors.Add($"The publish process could not copy files for {machineId} and dvin app {dvinApp.Id}, make sure dotnet and the app are not running");
                 return;
             }
 
@@ -190,8 +190,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
         private static void MakeCopiesOfAssemblies(IFolder publishFolder, IFileSystemService fileSystemService) {
             DeleteUnusedFileCopies(publishFolder, fileSystemService);
 
-            var files = fileSystemService.ListFilesInDirectory(publishFolder, "*.dll", SearchOption.TopDirectoryOnly).ToList();
-            files.AddRange(fileSystemService.ListFilesInDirectory(publishFolder, "*.exe", SearchOption.TopDirectoryOnly).ToList());
+            var files = fileSystemService.ListFilesInDirectory(publishFolder, "*.dll", SearchOption.AllDirectories).ToList();
+            files.AddRange(fileSystemService.ListFilesInDirectory(publishFolder, "*.exe", SearchOption.AllDirectories).ToList());
             foreach (var fileName in files.Where(f => !f.Contains(@"\%"))) {
                 var i = 0;
                 string freshNameOne, freshNameTwo;
@@ -210,7 +210,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
         }
 
         private static void DeleteUnusedFileCopies(IFolder publishFolder, IFileSystemService fileSystemService) {
-            var files = fileSystemService.ListFilesInDirectory(publishFolder, "%*.dll", SearchOption.TopDirectoryOnly).ToList();
+            var files = fileSystemService.ListFilesInDirectory(publishFolder, "%*.dll", SearchOption.AllDirectories).ToList();
             foreach (var file in files) {
                 try {
                     fileSystemService.DeleteFile(file);
