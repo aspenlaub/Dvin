@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyName>Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp</AssemblyName>
     <RootNamespace>Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp</RootNamespace>
     <StartupObject>Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Program</StartupObject>
@@ -24,6 +24,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.Dvin" Version="1.0.6888.24739" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.5" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.0" />
   </ItemGroup>
 </Project>
