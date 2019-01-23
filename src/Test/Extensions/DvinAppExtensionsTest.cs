@@ -167,7 +167,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanStartSampleApp() {
             var repository = new DvinRepository(vComponentProvider);
             var errorsAndInfos = new ErrorsAndInfos();
@@ -223,7 +223,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task SampleAppCanPublishItselfWhileRunning() {
             var repository = new DvinRepository(vComponentProvider);
             var errorsAndInfos = new ErrorsAndInfos();
@@ -257,7 +257,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
                         var content = await response.Content.ReadAsStringAsync();
                         Assert.AreNotEqual(HttpStatusCode.InternalServerError, response.StatusCode, content);
                         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-                        Assert.IsTrue(content.Contains("Your dvin app just published itself"));
+                        Assert.IsTrue(content.Contains("Your dvin app just published itself"), content);
                         lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
                         Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
                     }

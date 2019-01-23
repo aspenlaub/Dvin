@@ -10,13 +10,23 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
     [TestClass]
     public class TvinstControllerTest {
-        [TestMethod, Ignore]
+        private readonly IComponentProvider vComponentProvider;
+
+        public TvinstControllerTest() {
+            vComponentProvider = new ComponentProvider();
+        }
+
+        [TestMethod]
         public async Task CanCreateTestClient() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home";
@@ -26,11 +36,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
                 var response = await client.GetAsync(url);
                 Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
                 var content = await response.Content.ReadAsStringAsync();
-                Assert.IsTrue(content.Contains("Hello World says your dvin app"));
+                Assert.IsTrue(content.Contains("Hello World says your dvin app"), content);
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanHandleCrashes() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home/Crash";
@@ -61,24 +71,21 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
             return server.CreateClient();
         }
 
-        private static async Task<DvinApp> GetDvinApp() {
-            var repository = new DvinRepository();
-            var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId);
+        private async Task<DvinApp> GetDvinApp() {
+            var repository = new DvinRepository(vComponentProvider);
+            var errorsAndInfos = new ErrorsAndInfos();
+            var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
             Assert.IsNotNull(dvinApp);
             return dvinApp;
         }
 
         private static IList<string> FilesWithDeliberateExceptionLogged(IDvinApp dvinApp) {
-            var dvinAppFolder = dvinApp.FolderOnMachine(Environment.MachineName);
-            if (dvinAppFolder == null) {
-                throw new Exception($"Folders for dvin app {dvinApp.Id} not found");
-            }
-
-            return Directory.GetFiles(dvinAppFolder.ExceptionLogFolder, "Ex*.txt", SearchOption.TopDirectoryOnly)
+            return Directory.GetFiles(dvinApp.ExceptionLogFolder, "Ex*.txt", SearchOption.TopDirectoryOnly)
                 .Where(f => File.ReadAllText(f).Contains("This is a deliberate crash")).ToList();
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanPublishMyself() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Publish";
@@ -90,7 +97,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
                 var response = await client.GetAsync(url);
                 Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
                 var content = await response.Content.ReadAsStringAsync();
-                Assert.IsTrue(content.Contains("Your dvin app just published itself"));
+                Assert.IsTrue(content.Contains("Your dvin app just published itself"), content);
                 var lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
                 Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
             }

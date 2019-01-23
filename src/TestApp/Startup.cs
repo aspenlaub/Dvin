@@ -1,4 +1,6 @@
 ﻿using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +21,8 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp {
             services
                 .AddMvc(config => config.Filters.Add(new DvinExceptionFilterAttribute()))
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddTransient<IComponentProvider, ComponentProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
