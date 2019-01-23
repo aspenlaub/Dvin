@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+﻿using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
     public class SecretDvinApps : ISecret<DvinApps> {
@@ -10,10 +9,10 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
                 Description = "This is a nonsense entry with the sole purpose of providing a valid DvinApps secret",
                 Port = 50114,
                 Executable = "Aspenlaub.Net.GraspNetCore.exe",
-                DvinAppFolders = new List<DvinAppFolder> {
-                    new DvinAppFolder { MachineId = "AlicesMachine", SolutionFolder = @"D:\Users\Alice\GraspNetCore", ReleaseFolder = @"D:\Users\Alice\GraspNetCoreBin\Release", PublishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish", ExceptionLogFolder = @"D:\Temp\Exceptions" },
-                    new DvinAppFolder { MachineId = "BobsMachine", SolutionFolder = @"C:\Users\Bob\GraspNetCore", ReleaseFolder = @"C:\Users\Bob\GraspNetCoreBin\Release", PublishFolder = @"C:\Users\Bob\GraspNetCoreBin\Publish", ExceptionLogFolder = @"D:\Temp\Exceptions" },
-                }
+                SolutionFolder = @"D:\Users\Alice\GraspNetCore",
+                ReleaseFolder = @"D:\Users\Alice\GraspNetCoreBin\Release",
+                PublishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish",
+                ExceptionLogFolder = @"D:\Temp\Exceptions"
             }
         });
 

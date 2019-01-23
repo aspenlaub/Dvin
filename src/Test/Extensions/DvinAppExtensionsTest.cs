@@ -11,7 +11,9 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Helpers;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,50 +22,53 @@ using Moq;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
     [TestClass]
     public class DvinAppExtensionsTest {
+        private readonly IComponentProvider vComponentProvider;
+
+        public DvinAppExtensionsTest() {
+            vComponentProvider = new ComponentProvider();
+        }
+
         [TestMethod]
         public void CanValidatePubXml() {
             var fileSystemServiceMock = new Mock<IFileSystemService>();
-            var machineId = Environment.MachineName;
-            var notTheMachineId = machineId + machineId;
-            var sut = new DvinApp();
             const string solutionFolder = @"D:\Users\Alice\GraspNetCore";
             const string publishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish";
-            sut.DvinAppFolders.Add(new DvinAppFolder { MachineId = machineId, SolutionFolder = solutionFolder, PublishFolder = publishFolder });
+            var sut = new DvinApp {
+                SolutionFolder = solutionFolder,
+                PublishFolder = publishFolder
+            };
             fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns(new List<string>());
             fileSystemServiceMock.Setup(f => f.FolderExists(It.IsAny<string>())).Returns(true);
             var errorsAndInfos = new ErrorsAndInfos();
-            sut.ValidatePubXml(notTheMachineId, fileSystemServiceMock.Object, errorsAndInfos);
-            Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith($"No folders specified for {notTheMachineId}")));
 
-            errorsAndInfos = new ErrorsAndInfos();
-            sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
+            sut.ValidatePubXml(fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith("Found 0 pubxml files")));
 
             errorsAndInfos = new ErrorsAndInfos();
             fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns(new List<string> { "1", "2" });
-            sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
+            sut.ValidatePubXml(fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith("Found 2 pubxml files")));
 
             errorsAndInfos = new ErrorsAndInfos();
             fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns(new List<string> { solutionFolder + @"\Properties\publishProfile.pubxml" });
             fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml(null));
-            sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
+            sut.ValidatePubXml(fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.StartsWith("publishUrl element not found")));
 
             errorsAndInfos = new ErrorsAndInfos();
             fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("abc"));
-            sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
+            sut.ValidatePubXml(fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.EndsWith("does not start with $(MSBuildThisFileDirectory)")));
 
             errorsAndInfos = new ErrorsAndInfos();
             fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("$(MSBuildThisFileDirectory)"));
-            sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
+            sut.ValidatePubXml(fileSystemServiceMock.Object, errorsAndInfos);
             Assert.IsTrue(errorsAndInfos.Errors.Any(e => e.Contains("should be $(MSBuildThisFileDirectory)")));
 
             errorsAndInfos = new ErrorsAndInfos();
             fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("$(MSBuildThisFileDirectory)..\\..\\GraspNetCoreBin\\Publish"));
-            sut.ValidatePubXml(machineId, fileSystemServiceMock.Object, errorsAndInfos);
-            Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+            sut.ValidatePubXml(fileSystemServiceMock.Object, errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
 
             errorsAndInfos = new ErrorsAndInfos();
             sut.ValidatePubXml(errorsAndInfos);
@@ -121,12 +126,14 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
         [TestMethod]
         public void CanCheckIfAppHasBeenPublished() {
             var fileSystemServiceMock = new Mock<IFileSystemService>();
-            var machineId = Environment.MachineName;
-            var sut = new DvinApp();
             const string solutionFolder = @"D:\Users\Alice\GraspNetCore";
             const string releaseFolder = @"D:\Users\Alice\GraspNetCoreBin\Release";
             const string publishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish";
-            sut.DvinAppFolders.Add(new DvinAppFolder { MachineId = machineId, SolutionFolder = solutionFolder, ReleaseFolder = releaseFolder, PublishFolder = publishFolder });
+            var sut = new DvinApp {
+                SolutionFolder = solutionFolder,
+                ReleaseFolder = releaseFolder,
+                PublishFolder = publishFolder
+            };
             fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns<IFolder, string, SearchOption>((f, p, s) => {
                 return new List<string> { f.FullName + @"\something.json" };
             });
@@ -134,61 +141,64 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             fileSystemServiceMock.Setup(f => f.LastWriteTime(It.IsAny<string>())).Returns<string>(f => {
                 return f.StartsWith(publishFolder) ? now : now.AddMinutes(1);
             });
-            Assert.IsFalse(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
+            Assert.IsFalse(sut.HasAppBeenPublishedAfterLatestSourceChanges(fileSystemServiceMock.Object));
             fileSystemServiceMock.Setup(f => f.LastWriteTime(It.IsAny<string>())).Returns<string>(f => {
                 return f.StartsWith(publishFolder) || f.StartsWith(releaseFolder) ? now.AddMinutes(1) : now;
             });
-            Assert.IsTrue(sut.HasAppBeenPublishedAfterLatestSourceChanges(machineId, fileSystemServiceMock.Object));
+            Assert.IsTrue(sut.HasAppBeenPublishedAfterLatestSourceChanges(fileSystemServiceMock.Object));
         }
 
         [TestMethod]
         public async Task CanPublishApps() {
-            var repository = new DvinRepository();
+            var repository = new DvinRepository(vComponentProvider);
             var fileSystemService = new FileSystemService();
-            var apps = await repository.LoadAsync();
+            var errorsAndInfos = new ErrorsAndInfos();
+            var apps = await repository.LoadAsync(errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+            // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (var app in apps) {
-                if (!app.HasAppBeenBuiltAfterLatestSourceChanges(Environment.MachineName, fileSystemService)) { continue; }
+                if (!app.HasAppBeenBuiltAfterLatestSourceChanges(fileSystemService)) { continue; }
 
-                var errorsAndInfos = new ErrorsAndInfos();
                 app.Publish(fileSystemService, errorsAndInfos);
                 if (errorsAndInfos.Errors.Any(e => e.StartsWith("No folders specified"))) { continue; }
 
-                Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+                Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
                 break;
             }
         }
 
         [TestMethod]
         public async Task CanStartSampleApp() {
-            var repository = new DvinRepository();
-            var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId);
+            var repository = new DvinRepository(vComponentProvider);
+            var errorsAndInfos = new ErrorsAndInfos();
+            var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
             Assert.IsNotNull(dvinApp);
 
             var fileSystemService = new FileSystemService();
-            var errorsAndInfos = new ErrorsAndInfos();
 
             dvinApp.ValidatePubXml(errorsAndInfos);
-            Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
 
             #if DEBUG
-            if (!dvinApp.HasAppBeenBuiltAfterLatestSourceChanges(Environment.MachineName, fileSystemService)) {
+            if (!dvinApp.HasAppBeenBuiltAfterLatestSourceChanges(fileSystemService)) {
                 return;
             }
             #endif
 
-            if (!dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(Environment.MachineName, fileSystemService)) {
+            if (!dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(fileSystemService)) {
                 dvinApp.Publish(fileSystemService, errorsAndInfos);
-                Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+                Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
             }
 
-            Assert.IsTrue(dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(Environment.MachineName, fileSystemService));
+            Assert.IsTrue(dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(fileSystemService));
 
             using (var process = dvinApp.Start(fileSystemService, errorsAndInfos)) {
-                Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+                Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
                 Assert.IsNotNull(process);
                 var url = $"http://localhost:{dvinApp.Port}/Home";
                 Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
-                Assert.IsTrue(dvinApp.IsPortListenedTo(), string.Join("\r\n", errorsAndInfos.Errors));
+                Assert.IsTrue(dvinApp.IsPortListenedTo(), errorsAndInfos.ErrorsToString());
                 try {
                     using (var client = new HttpClient()) {
                         var response = await client.GetAsync(url);
@@ -213,32 +223,33 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             }
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public async Task SampleAppCanPublishItselfWhileRunning() {
-            var repository = new DvinRepository();
-            var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId);
+            var repository = new DvinRepository(vComponentProvider);
+            var errorsAndInfos = new ErrorsAndInfos();
+            var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
             Assert.IsNotNull(dvinApp);
 
             var fileSystemService = new FileSystemService();
-            var errorsAndInfos = new ErrorsAndInfos();
 
             dvinApp.ValidatePubXml(errorsAndInfos);
-            Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
 
             var timeBeforePublishing = DateTime.Now;
 
             dvinApp.Publish(fileSystemService, true, errorsAndInfos);
-            Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
 
             var lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
             Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
 
             using (var process = dvinApp.Start(fileSystemService, errorsAndInfos)) {
-                Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+                Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
                 Assert.IsNotNull(process);
                 var url = $"http://localhost:{dvinApp.Port}/Publish";
                 Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
-                Assert.IsTrue(dvinApp.IsPortListenedTo(), string.Join("\r\n", errorsAndInfos.Errors));
+                Assert.IsTrue(dvinApp.IsPortListenedTo(), errorsAndInfos.ErrorsToString());
                 try {
                     using (var client = new HttpClient()) {
                         timeBeforePublishing = DateTime.Now;

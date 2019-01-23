@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
     [TestClass]
     public class TvinstControllerTest {
-        [TestMethod]
+        [TestMethod, Ignore]
         public async Task CanCreateTestClient() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home";
@@ -30,7 +30,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
             }
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public async Task CanHandleCrashes() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home/Crash";
@@ -78,7 +78,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
                 .Where(f => File.ReadAllText(f).Contains("This is a deliberate crash")).ToList();
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public async Task CanPublishMyself() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Publish";

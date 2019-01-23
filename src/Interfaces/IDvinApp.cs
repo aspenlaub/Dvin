@@ -1,13 +1,17 @@
-﻿using System.Collections.Generic;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
+﻿// ReSharper disable UnusedMember.Global
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces {
     public interface IDvinApp {
         string Id { get; set; }
-        // ReSharper disable once UnusedMember.Global
         string Description { get; set; }
-        List<DvinAppFolder> DvinAppFolders { get; set; }
         string Executable { get; set; }
         int Port { get; set; }
+        string SolutionFolder { get; set; }
+        string ReleaseFolder { get; set; }
+        string PublishFolder { get; set; }
+        string ExceptionLogFolder { get; set; }
+
+        void ResolveFolders(IComponentProvider componentProvider, IErrorsAndInfos errorsAndInfos);
     }
 }

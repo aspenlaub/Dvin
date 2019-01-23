@@ -6,6 +6,7 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Controllers {
@@ -23,7 +24,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Controllers {
             var errorsAndInfos = new ErrorsAndInfos();
             dvinApp.Publish(fileSystemService, true, errorsAndInfos);
             return errorsAndInfos.AnyErrors()
-                ? StatusCode((int)HttpStatusCode.InternalServerError, string.Format("\r\n", errorsAndInfos.Errors))
+                ? StatusCode((int)HttpStatusCode.InternalServerError, errorsAndInfos.ErrorsToString())
                 : Ok("Your dvin app just published itself");
         }
 

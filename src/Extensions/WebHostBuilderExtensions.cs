@@ -1,26 +1,29 @@
 ﻿using System;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Microsoft.AspNetCore.Hosting;
 // ReSharper disable UnusedMember.Global
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
     public static class WebHostBuilderExtensions {
         public static IWebHostBuilder UseDvin(this IWebHostBuilder builder, string dvinAppId, bool release, string[] mainProgramArgs) {
-            var dvinRepository = new DvinRepository();
+            var componentProvider = new ComponentProvider();
+            var dvinRepository = new DvinRepository(componentProvider);
 
-            var dvinApp = dvinRepository.LoadAsync(dvinAppId).Result;
+            var errorsAndInfos = new ErrorsAndInfos();
+            var dvinApp = dvinRepository.LoadAsync(dvinAppId, errorsAndInfos).Result;
             if (dvinApp == null) {
                 throw new Exception($"Dvin app {dvinAppId} not found");
             }
 
-            var dvinAppFolder = dvinApp.FolderOnMachine(Environment.MachineName);
-            if (dvinAppFolder == null) {
-                throw new Exception($"Folders for dvin app {dvinAppId} not found");
+            if (errorsAndInfos.AnyErrors()) {
+                throw new Exception(errorsAndInfos.ErrorsToString());
             }
 
-            DvinExceptionFilterAttribute.SetExceptionLogFolder(new Folder(dvinAppFolder.ExceptionLogFolder));
+            DvinExceptionFilterAttribute.SetExceptionLogFolder(new Folder(dvinApp.ExceptionLogFolder));
 
             builder.UseUrls($"http://localhost:{dvinApp.Port}");
             return builder;

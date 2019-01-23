@@ -10,5 +10,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
             clone.AddRange(this);
             return clone;
         }
+
+        public void ResolveFolders(IComponentProvider componentProvider, IErrorsAndInfos errorsAndInfos) {
+            ForEach(dvinApp => dvinApp.ResolveFolders(componentProvider, errorsAndInfos));
+        }
     }
 }

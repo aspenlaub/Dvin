@@ -7,7 +7,6 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
@@ -17,29 +16,19 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
         private const string CsProjNamespace = "http://schemas.microsoft.com/developer/msbuild/2003";
 
         public static void ValidatePubXml(this IDvinApp dvinApp, IErrorsAndInfos errorsAndInfos) {
-            ValidatePubXml(dvinApp, Environment.MachineName, new FileSystemService(), errorsAndInfos);
+            ValidatePubXml(dvinApp, new FileSystemService(), errorsAndInfos);
         }
 
-        public static DvinAppFolder FolderOnMachine(this IDvinApp dvinApp, string machineId) {
-            return dvinApp.DvinAppFolders.FirstOrDefault(d => d.MachineId.ToLowerInvariant() == machineId.ToLowerInvariant());
-        }
-
-        public static void ValidatePubXml(this IDvinApp dvinApp, string machineId, IFileSystemService fileSystemService, IErrorsAndInfos errorsAndInfos) {
-            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
-            if (dvinAppFolder == null) {
-                errorsAndInfos.Errors.Add($"No folders specified for {machineId} in secret {dvinApp.Id} dvin app");
+        public static void ValidatePubXml(this IDvinApp dvinApp, IFileSystemService fileSystemService, IErrorsAndInfos errorsAndInfos) {
+            if (!fileSystemService.FolderExists(dvinApp.SolutionFolder)) {
+                errorsAndInfos.Errors.Add($"Folder \"{dvinApp.SolutionFolder}\" not found");
                 return;
             }
 
-            if (!fileSystemService.FolderExists(dvinAppFolder.SolutionFolder)) {
-                errorsAndInfos.Errors.Add($"Folder \"{dvinAppFolder.SolutionFolder}\" not found");
-                return;
-            }
-
-            var solutionFolder = new Folder(dvinAppFolder.SolutionFolder);
+            var solutionFolder = new Folder(dvinApp.SolutionFolder);
             var pubXmlFiles =  fileSystemService.ListFilesInDirectory(solutionFolder, "*.pubxml", SearchOption.AllDirectories);
             if (pubXmlFiles.Count != 1) {
-                errorsAndInfos.Errors.Add($"Found {pubXmlFiles.Count} pubxml files for machine {machineId} in secret {dvinApp.Id} dvin app");
+                errorsAndInfos.Errors.Add($"Found {pubXmlFiles.Count} pubxml files in secret {dvinApp.Id} dvin app");
                 return;
             }
 
@@ -66,7 +55,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return;
             }
 
-            var publishFolder = new Folder(dvinAppFolder.PublishFolder);
+            var publishFolder = new Folder(dvinApp.PublishFolder);
             int pos;
             for (pos = 0; pos < pubXmlFile.Length && pos < publishFolder.FullName.Length && pubXmlFile[pos] == publishFolder.FullName[pos]; pos++) { }
             for (pos --; pos > 0 && pubXmlFile[pos] != '\\'; pos--) { }
@@ -96,15 +85,12 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             return errorsAndInfos.Infos.Any(i => i.Contains("TCP") && i.Contains("LISTENING") && i.Contains($":{dvinApp.Port} "));
         }
 
-        public static bool HasAppBeenPublishedAfterLatestSourceChanges(this IDvinApp dvinApp, string machineId, IFileSystemService fileSystemService) {
-            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
-            return dvinAppFolder != null && HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinAppFolder.SolutionFolder), new Folder(dvinAppFolder.PublishFolder));
+        public static bool HasAppBeenPublishedAfterLatestSourceChanges(this IDvinApp dvinApp, IFileSystemService fileSystemService) {
+            return HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinApp.SolutionFolder), new Folder(dvinApp.PublishFolder));
         }
 
-        public static bool HasAppBeenBuiltAfterLatestSourceChanges(this IDvinApp dvinApp, string machineId,
-            IFileSystemService fileSystemService) {
-            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
-            return dvinAppFolder != null && HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinAppFolder.SolutionFolder), new Folder(dvinAppFolder.ReleaseFolder));
+        public static bool HasAppBeenBuiltAfterLatestSourceChanges(this IDvinApp dvinApp, IFileSystemService fileSystemService) {
+            return HaveArtifactsBeenProducedAfterLatestSourceChanges(fileSystemService, new Folder(dvinApp.SolutionFolder), new Folder(dvinApp.ReleaseFolder));
         }
 
         private static bool HaveArtifactsBeenProducedAfterLatestSourceChanges(IFileSystemService fileSystemService, IFolder sourceFolder, IFolder artifactsFolder) {
@@ -133,41 +119,34 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
         }
 
         public static void Publish(this IDvinApp dvinApp, IFileSystemService fileSystemService, bool ignoreMissingReleaseBuild, IErrorsAndInfos errorsAndInfos) {
-            var machineId = Environment.MachineName;
-            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
-            if (dvinAppFolder == null) {
-                errorsAndInfos.Errors.Add($"No folders specified for {machineId} in secret {dvinApp.Id} dvin app");
+            if (!ignoreMissingReleaseBuild && !dvinApp.HasAppBeenBuiltAfterLatestSourceChanges(fileSystemService)) {
+                errorsAndInfos.Errors.Add($"No release build for dvin app {dvinApp.Id}");
                 return;
             }
 
-            if (!ignoreMissingReleaseBuild && !dvinApp.HasAppBeenBuiltAfterLatestSourceChanges(machineId, fileSystemService)) {
-                errorsAndInfos.Errors.Add($"No release build for dvin app {dvinApp.Id} on {machineId}");
+            if (!fileSystemService.FolderExists(dvinApp.PublishFolder)) {
+                errorsAndInfos.Errors.Add($"Folder \"{dvinApp.PublishFolder}\" not found");
                 return;
             }
 
-            if (!fileSystemService.FolderExists(dvinAppFolder.PublishFolder)) {
-                errorsAndInfos.Errors.Add($"Folder \"{dvinAppFolder.PublishFolder}\" not found");
+            if (!fileSystemService.FolderExists(dvinApp.SolutionFolder)) {
+                errorsAndInfos.Errors.Add($"Folder \"{dvinApp.SolutionFolder}\" not found");
                 return;
             }
 
-            if (!fileSystemService.FolderExists(dvinAppFolder.SolutionFolder)) {
-                errorsAndInfos.Errors.Add($"Folder \"{dvinAppFolder.SolutionFolder}\" not found");
-                return;
-            }
-
-            var publishedFiles = Artifacts(fileSystemService, new Folder(dvinAppFolder.PublishFolder));
+            var publishedFiles = Artifacts(fileSystemService, new Folder(dvinApp.PublishFolder));
             var lastPublishedAt = publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
 
-            MakeCopiesOfAssemblies(new Folder(dvinAppFolder.PublishFolder), fileSystemService);
+            MakeCopiesOfAssemblies(new Folder(dvinApp.PublishFolder), fileSystemService);
 
-            var projectFile = fileSystemService.ListFilesInDirectory(new Folder(dvinAppFolder.SolutionFolder), "*.csproj", SearchOption.AllDirectories).FirstOrDefault(f => f.EndsWith(dvinApp.Id + ".csproj"));
+            var projectFile = fileSystemService.ListFilesInDirectory(new Folder(dvinApp.SolutionFolder), "*.csproj", SearchOption.AllDirectories).FirstOrDefault(f => f.EndsWith(dvinApp.Id + ".csproj"));
             if (projectFile == null) {
-                errorsAndInfos.Errors.Add($"No project file found for {machineId} and dvin app {dvinApp.Id} (must end with {dvinApp.Id}.csproj)");
+                errorsAndInfos.Errors.Add($"No project file found for dvin app {dvinApp.Id} (must end with {dvinApp.Id}.csproj)");
                 return;
             }
 
             var processStarter = new ProcessStarter();
-            var arguments = $"publish \"{projectFile}\" -c Release --no-restore -o \"{dvinAppFolder.PublishFolder}\"";
+            var arguments = $"publish \"{projectFile}\" -c Release --no-restore -o \"{dvinApp.PublishFolder}\"";
             using (var process = processStarter.StartProcess("dotnet", arguments, "", errorsAndInfos)) {
                 if (process != null) {
                     processStarter.WaitForExit(process);
@@ -175,16 +154,16 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             }
 
             if (errorsAndInfos.Infos.Any(i => i.Contains("Could not copy"))) {
-                errorsAndInfos.Errors.Add($"The publish process could not copy files for {machineId} and dvin app {dvinApp.Id}, make sure dotnet and the app are not running");
+                errorsAndInfos.Errors.Add($"The publish process could not copy files for dvin app {dvinApp.Id}, make sure dotnet and the app are not running");
                 return;
             }
 
-            publishedFiles = Artifacts(fileSystemService, new Folder(dvinAppFolder.PublishFolder));
+            publishedFiles = Artifacts(fileSystemService, new Folder(dvinApp.PublishFolder));
             if (!publishedFiles.Any() || lastPublishedAt >= publishedFiles.Max(f => fileSystemService.LastWriteTime(f))) {
-                errorsAndInfos.Errors.Add($"Nothing was published for {machineId} and dvin app {dvinApp.Id}");
+                errorsAndInfos.Errors.Add($"Nothing was published for dvin app {dvinApp.Id}");
             }
 
-            DeleteUnusedFileCopies(new Folder(dvinAppFolder.PublishFolder), fileSystemService);
+            DeleteUnusedFileCopies(new Folder(dvinApp.PublishFolder), fileSystemService);
         }
 
         private static void MakeCopiesOfAssemblies(IFolder publishFolder, IFileSystemService fileSystemService) {
@@ -230,28 +209,18 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return null;
             }
 
-            var machineId = Environment.MachineName;
-            var dvinAppFolder = dvinApp.FolderOnMachine(machineId);
-            if (dvinAppFolder == null) {
-                errorsAndInfos.Errors.Add($"No folders specified for {machineId} in secret {dvinApp.Id} dvin app");
-                return null;
-            }
-
-            if (!fileSystemService.FolderExists(dvinAppFolder.PublishFolder)) {
-                errorsAndInfos.Errors.Add($"Folder \"{dvinAppFolder.PublishFolder}\" not found");
+            if (!fileSystemService.FolderExists(dvinApp.PublishFolder)) {
+                errorsAndInfos.Errors.Add($"Folder \"{dvinApp.PublishFolder}\" not found");
                 return null;
             }
 
             var runner = new ProcessStarter();
-            var process = runner.StartProcess("dotnet", dvinApp.Executable, dvinAppFolder.PublishFolder, errorsAndInfos);
+            var process = runner.StartProcess("dotnet", dvinApp.Executable, dvinApp.PublishFolder, errorsAndInfos);
             return process;
         }
 
         public static DateTime LastPublishedAt(this IDvinApp dvinApp, IFileSystemService fileSystemService) {
-            var dvinAppFolder = dvinApp.FolderOnMachine(Environment.MachineName);
-            if (dvinAppFolder == null) {  return DateTime.MinValue; }
-
-            var publishedFiles = Artifacts(fileSystemService, new Folder(dvinAppFolder.PublishFolder));
+            var publishedFiles = Artifacts(fileSystemService, new Folder(dvinApp.PublishFolder));
             return publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
         }
     }

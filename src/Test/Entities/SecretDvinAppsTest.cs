@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities {
@@ -14,7 +15,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities {
             var dvinAppsSecret = new SecretDvinApps();
             var errorsAndInfos = new ErrorsAndInfos();
             var dvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
-            Assert.IsFalse(errorsAndInfos.AnyErrors(), string.Join("\r\n", errorsAndInfos.Errors));
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
             Assert.IsTrue(dvinApps.Any(c => c.Id == "GraspNetCore"));
         }
     }
