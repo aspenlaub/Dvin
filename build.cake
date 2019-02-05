@@ -36,8 +36,6 @@ var tempCakeBuildFileName = tempFolder + "/build.cake.new";
 var currentGitBranch = GitBranchCurrent(DirectoryPath.FromString("."));
 var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
 var componentProvider = new ComponentProvider();
-var toolsVersion = componentProvider.ToolsVersionFinder.LatestAvailableToolsVersion();
-var toolsVersionEnum = toolsVersion >= 16 ? MSBuildToolVersion.VS2019 : MSBuildToolVersion.VS2017;
 
 var projectErrorsAndInfos = new ErrorsAndInfos();
 var projectLogic = componentProvider.ProjectLogic;
@@ -63,7 +61,6 @@ Setup(ctx => {
   Information("Current GIT branch is: " + currentGitBranch.FriendlyName);
   Information("Build cake is: " + buildCakeFileName);
   Information("Latest build cake URL is: " + latestBuildCakeUrl);
-  Information("Tools version is: " + toolsVersion);
 });
 
 Task("UpdateBuildCake")
@@ -207,7 +204,6 @@ Task("DebugBuild")
       => settings
         .SetConfiguration("Debug")
         .SetVerbosity(Verbosity.Minimal)
-        // .UseToolVersion(toolsVersionEnum)
         .WithProperty("Platform", "Any CPU")
     );
   });
@@ -256,7 +252,6 @@ Task("ReleaseBuild")
       => settings
         .SetConfiguration("Release")
         .SetVerbosity(Verbosity.Minimal)
-        // .UseToolVersion(toolsVersionEnum)
         .WithProperty("Platform", "Any CPU")
     );
   });
