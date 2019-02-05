@@ -37,7 +37,7 @@ var currentGitBranch = GitBranchCurrent(DirectoryPath.FromString("."));
 var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
 var componentProvider = new ComponentProvider();
 var toolsVersion = componentProvider.ToolsVersionFinder.LatestAvailableToolsVersion();
-var toolsVersionEnum = toolsVersion >= 15 ? MSBuildToolVersion.VS2017 : MSBuildToolVersion.NET46;
+var toolsVersionEnum = toolsVersion >= 16 ? MSBuildToolVersion.VS2019 : MSBuildToolVersion.VS2017;
 
 var projectErrorsAndInfos = new ErrorsAndInfos();
 var projectLogic = componentProvider.ProjectLogic;
@@ -207,7 +207,7 @@ Task("DebugBuild")
       => settings
         .SetConfiguration("Debug")
         .SetVerbosity(Verbosity.Minimal)
-        .UseToolVersion(toolsVersionEnum)
+        // .UseToolVersion(toolsVersionEnum)
         .WithProperty("Platform", "Any CPU")
     );
   });
@@ -221,26 +221,16 @@ Task("RunTestsOnDebugArtifacts")
         if (projectErrorsAndInfos.Errors.Any()) {
             throw new Exception(string.Join("\r\n", projectErrorsAndInfos.Errors));
         }
+		if (projectLogic.TargetsOldFramework(project)) {
+            throw new Exception(".Net frameworks 4.6 and 4.5 are no longer supported");
+		}
         Information("Running tests in " + projectFile.FullPath);
-        if (projectLogic.TargetsOldFramework(project)) {
-          var outputPath = project.PropertyGroups.Where(g => g.Condition.Contains("Debug")).Select(g => g.OutputPath).Where(p => p != "").First();
-          outputPath = (outputPath.Contains(':') ? "" : projectFile.FullPath.Substring(0, projectFile.FullPath.LastIndexOf('/') + 1)) + outputPath.Replace('\\', '/');
-          if (!outputPath.EndsWith("/")) { outputPath = outputPath + '/'; }
-          Information("Output path is " + outputPath);
-          var vsTestExe = componentProvider.ExecutableFinder.FindVsTestExe(toolsVersion);
-          if (vsTestExe == "") {
-            MSTest(outputPath + "*.Test.dll", new MSTestSettings() { NoIsolation = false });
-          } else {
-            VSTest(outputPath + "*.Test.dll", new VSTestSettings() { Logger = "trx", InIsolation = true });
-          }
-        } else {
-          var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
-          var dotNetCoreTestSettings = new DotNetCoreTestSettings {
-            Configuration = "Debug", NoRestore = true, NoBuild = true,
-            ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + logFileName + "\"")
-          };
-          DotNetCoreTest(projectFile.FullPath, dotNetCoreTestSettings);
-      }
+        var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
+        var dotNetCoreTestSettings = new DotNetCoreTestSettings {
+          Configuration = "Debug", NoRestore = true, NoBuild = true,
+          ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + logFileName + "\"")
+        };
+        DotNetCoreTest(projectFile.FullPath, dotNetCoreTestSettings);
     }
     CleanDirectory(testResultsFolder); 
     DeleteDirectory(testResultsFolder, new DeleteDirectorySettings { Recursive = false, Force = false });
@@ -266,7 +256,7 @@ Task("ReleaseBuild")
       => settings
         .SetConfiguration("Release")
         .SetVerbosity(Verbosity.Minimal)
-        .UseToolVersion(toolsVersionEnum)
+        // .UseToolVersion(toolsVersionEnum)
         .WithProperty("Platform", "Any CPU")
     );
   });
@@ -280,26 +270,16 @@ Task("RunTestsOnReleaseArtifacts")
         if (projectErrorsAndInfos.Errors.Any()) {
             throw new Exception(string.Join("\r\n", projectErrorsAndInfos.Errors));
         }
+		if (projectLogic.TargetsOldFramework(project)) {
+            throw new Exception(".Net frameworks 4.6 and 4.5 are no longer supported");
+		}
         Information("Running tests in " + projectFile.FullPath);
-        if (projectLogic.TargetsOldFramework(project)) {
-          var outputPath = project.PropertyGroups.Where(g => g.Condition.Contains("Release")).Select(g => g.OutputPath).Where(p => p != "").First();
-          outputPath = (outputPath.Contains(':') ? "" : projectFile.FullPath.Substring(0, projectFile.FullPath.LastIndexOf('/') + 1)) + outputPath.Replace('\\', '/');
-          if (!outputPath.EndsWith("/")) { outputPath = outputPath + '/'; }
-          Information("Output path is " + outputPath);
-          var vsTestExe = componentProvider.ExecutableFinder.FindVsTestExe(toolsVersion);
-          if (vsTestExe == "") {
-            MSTest(outputPath + "*.Test.dll", new MSTestSettings() { NoIsolation = false });
-          } else {
-            VSTest(outputPath + "*.Test.dll", new VSTestSettings() { Logger = "trx", InIsolation = true });
-          }
-        } else {
-          var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
-          var dotNetCoreTestSettings = new DotNetCoreTestSettings { 
-            Configuration = "Release", NoRestore = true, NoBuild = true,
-            ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + logFileName + "\"")
-          };
-          DotNetCoreTest(projectFile.FullPath, dotNetCoreTestSettings);
-      }
+        var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
+        var dotNetCoreTestSettings = new DotNetCoreTestSettings { 
+          Configuration = "Release", NoRestore = true, NoBuild = true,
+          ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + logFileName + "\"")
+        };
+        DotNetCoreTest(projectFile.FullPath, dotNetCoreTestSettings);
     }
     CleanDirectory(testResultsFolder); 
     DeleteDirectory(testResultsFolder, new DeleteDirectorySettings { Recursive = false, Force = false });
