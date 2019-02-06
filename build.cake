@@ -1,21 +1,24 @@
 #load "solution.cake"
-#addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=Cake.Git
-#addin nuget:?package=Nuget.Client&loaddependencies=true
-#addin nuget:?package=Nuget.Protocol.Core.v3&loaddependencies=true
-#addin nuget:?package=Microsoft.Win32.Registry
-#addin nuget:?package=SharpZipLib.NETStandard
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Pegh
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Shatilaya
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Nuclide&loaddependencies=true
 
-using Folder = Aspenlaub.Net.GitHub.CSharp.Pegh.Entities.Folder;
-using FolderUpdater = Aspenlaub.Net.GitHub.CSharp.Pegh.Components.FolderUpdater;
-using FolderUpdateMethod = Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces.FolderUpdateMethod;
-using ErrorsAndInfos = Aspenlaub.Net.GitHub.CSharp.Pegh.Entities.ErrorsAndInfos;
-using FolderExtensions = Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions.FolderExtensions;
 using Regex = System.Text.RegularExpressions.Regex;
-using ComponentProvider = Aspenlaub.Net.GitHub.CSharp.Shatilaya.ComponentProvider;
-using DeveloperSettingsSecret = Aspenlaub.Net.GitHub.CSharp.Shatilaya.Entities.DeveloperSettingsSecret;
+using Microsoft.Extensions.DependencyInjection;
+using Autofac;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
+using Aspenlaub.Net.GitHub.CSharp.Gitty;
+using Aspenlaub.Net.GitHub.CSharp.Gitty.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Gitty.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Gitty.TestUtilities;
+using Aspenlaub.Net.GitHub.CSharp.Protch;
+using Aspenlaub.Net.GitHub.CSharp.Protch.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Protch.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide.Entities;
 
 masterDebugBinFolder = MakeAbsolute(Directory(masterDebugBinFolder)).FullPath;
 masterReleaseBinFolder = MakeAbsolute(Directory(masterReleaseBinFolder)).FullPath;
@@ -35,11 +38,11 @@ var tempCakeBuildFileName = tempFolder + "/build.cake.new";
 
 var currentGitBranch = GitBranchCurrent(DirectoryPath.FromString("."));
 var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
-var componentProvider = new ComponentProvider();
+var container = new ContainerBuilder().UseGittyTestUtilities().UseNuclideProtchAndGitty().Build();
 
 var projectErrorsAndInfos = new ErrorsAndInfos();
-var projectLogic = componentProvider.ProjectLogic;
-var projectFactory = componentProvider.ProjectFactory;
+var projectLogic = container.Resolve<IProjectLogic>();
+var projectFactory = container.Resolve<IProjectFactory>();
 var solutionFileFullName = (MakeAbsolute(DirectoryPath.FromString("./src")).FullPath + '\\' + solutionId + ".sln").Replace('/', '\\');
 
 var createAndPushPackages = true;
@@ -108,7 +111,7 @@ Task("Pull")
   .Does(async () => {
     var developerSettingsSecret = new DeveloperSettingsSecret();
     var pullErrorsAndInfos = new ErrorsAndInfos();
-    var developerSettings = await componentProvider.PeghComponentProvider.SecretRepository.GetAsync(developerSettingsSecret, pullErrorsAndInfos);
+    var developerSettings = await container.Resolve<ISecretRepository>().GetAsync(developerSettingsSecret, pullErrorsAndInfos);
     if (pullErrorsAndInfos.Errors.Any()) {
       throw new Exception(string.Join("\r\n", pullErrorsAndInfos.Errors));
     }
@@ -122,8 +125,8 @@ Task("UpdateNuspec")
     var solutionFileFullName = solution.Replace('/', '\\');
     var nuSpecFile = solutionFileFullName.Replace(".sln", ".nuspec");
     var nuSpecErrorsAndInfos = new ErrorsAndInfos();
-    var headTipIdSha = componentProvider.GitUtilities.HeadTipIdSha(new Folder(repositoryFolder));
-    await componentProvider.NuSpecCreator.CreateNuSpecFileIfRequiredOrPresentAsync(true, solutionFileFullName, new List<string> { headTipIdSha }, nuSpecErrorsAndInfos);
+    var headTipIdSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
+    await container.Resolve<INuSpecCreator>().CreateNuSpecFileIfRequiredOrPresentAsync(true, solutionFileFullName, new List<string> { headTipIdSha }, nuSpecErrorsAndInfos);
     if (nuSpecErrorsAndInfos.Errors.Any()) {
       throw new Exception(string.Join("\r\n", nuSpecErrorsAndInfos.Errors));
     }
@@ -133,7 +136,7 @@ Task("VerifyThatThereAreNoUncommittedChanges")
   .Description("Verify that there are no uncommitted changes")
   .Does(() => {
     var uncommittedErrorsAndInfos = new ErrorsAndInfos();
-    componentProvider.GitUtilities.VerifyThatThereAreNoUncommittedChanges(new Folder(repositoryFolder), uncommittedErrorsAndInfos);
+    container.Resolve<IGitUtilities>().VerifyThatThereAreNoUncommittedChanges(new Folder(repositoryFolder), uncommittedErrorsAndInfos);
     if (uncommittedErrorsAndInfos.Errors.Any()) {
       throw new Exception(string.Join("\r\n", uncommittedErrorsAndInfos.Errors));
     }
@@ -143,7 +146,7 @@ Task("VerifyThatDevelopmentBranchIsAheadOfMaster")
   .WithCriteria(() => currentGitBranch.FriendlyName != "master")
   .Description("Verify that if the development branch is at least one commit after the master")
   .Does(() => {
-    if (!componentProvider.GitUtilities.IsBranchAheadOfMaster(new Folder(repositoryFolder))) {
+    if (!container.Resolve<IGitUtilities>().IsBranchAheadOfMaster(new Folder(repositoryFolder))) {
       throw new Exception("Branch must be at least one commit ahead of the origin/master");
     }
   });
@@ -155,9 +158,9 @@ Task("VerifyThatMasterBranchDoesNotHaveOpenPullRequests")
     var noPullRequestsErrorsAndInfos = new ErrorsAndInfos();
     bool thereAreOpenPullRequests;
     if (solutionSpecialSettingsDictionary.ContainsKey("PullRequestsToIgnore")) {
-      thereAreOpenPullRequests = await componentProvider.GitHubUtilities.HasOpenPullRequestAsync(new Folder(repositoryFolder), solutionSpecialSettingsDictionary["PullRequestsToIgnore"], noPullRequestsErrorsAndInfos);
+      thereAreOpenPullRequests = await container.Resolve<IGitHubUtilities>().HasOpenPullRequestAsync(new Folder(repositoryFolder), solutionSpecialSettingsDictionary["PullRequestsToIgnore"], noPullRequestsErrorsAndInfos);
     } else {
-      thereAreOpenPullRequests = await componentProvider.GitHubUtilities.HasOpenPullRequestAsync(new Folder(repositoryFolder), noPullRequestsErrorsAndInfos);
+      thereAreOpenPullRequests = await container.Resolve<IGitHubUtilities>().HasOpenPullRequestAsync(new Folder(repositoryFolder), noPullRequestsErrorsAndInfos);
     }
     if (thereAreOpenPullRequests) {
       throw new Exception("There are open pull requests");
@@ -173,7 +176,7 @@ Task("VerifyThatDevelopmentBranchDoesNotHaveOpenPullRequests")
   .Does(async () => {
     var noPullRequestsErrorsAndInfos = new ErrorsAndInfos();
     bool thereAreOpenPullRequests;
-    thereAreOpenPullRequests = await componentProvider.GitHubUtilities.HasOpenPullRequestForThisBranchAsync(new Folder(repositoryFolder), noPullRequestsErrorsAndInfos);
+    thereAreOpenPullRequests = await container.Resolve<IGitHubUtilities>().HasOpenPullRequestForThisBranchAsync(new Folder(repositoryFolder), noPullRequestsErrorsAndInfos);
     if (thereAreOpenPullRequests) {
       throw new Exception("There are open pull requests for this development branch");
     }
@@ -188,7 +191,7 @@ Task("VerifyThatPullRequestExistsForDevelopmentBranchHeadTip")
   .Does(async () => {
     var noPullRequestsErrorsAndInfos = new ErrorsAndInfos();
     bool thereArePullRequests;
-    thereArePullRequests = await componentProvider.GitHubUtilities.HasPullRequestForThisBranchAndItsHeadTipAsync(new Folder(repositoryFolder), noPullRequestsErrorsAndInfos);
+    thereArePullRequests = await container.Resolve<IGitHubUtilities>().HasPullRequestForThisBranchAndItsHeadTipAsync(new Folder(repositoryFolder), noPullRequestsErrorsAndInfos);
     if (!thereArePullRequests) {
       throw new Exception("There is no pull request for this development branch and its head tip");
     }
@@ -298,8 +301,6 @@ Task("CreateNuGetPackage")
   .Description("Create nuget package in the master Release binaries folder")
   .Does(() => {
     var projectErrorsAndInfos = new ErrorsAndInfos();
-    var projectLogic = componentProvider.ProjectLogic;
-    var projectFactory = componentProvider.ProjectFactory;
     var solutionFileFullName = (MakeAbsolute(DirectoryPath.FromString("./src")).FullPath + '\\' + solutionId + ".sln").Replace('/', '\\');
     var project = projectFactory.Load(solutionFileFullName, solutionFileFullName.Replace(".sln", ".csproj"), projectErrorsAndInfos);
     if (!projectLogic.DoAllNetStandardOrCoreConfigurationsHaveNuspecs(project)) {
@@ -336,7 +337,7 @@ Task("PushNuGetPackage")
   .WithCriteria(() => currentGitBranch.FriendlyName == "master" && createAndPushPackages)
   .Description("Push nuget package")
   .Does(async () => {
-    var nugetPackageToPushFinder = componentProvider.NugetPackageToPushFinder;
+    var nugetPackageToPushFinder = container.Resolve<INugetPackageToPushFinder>();
     var finderErrorsAndInfos = new ErrorsAndInfos();
     var packageToPush = await nugetPackageToPushFinder.FindPackageToPushAsync(new Folder(masterReleaseBinFolder.Replace('/', '\\')), new Folder(repositoryFolder.Replace('/', '\\')), solution.Replace('/', '\\'), finderErrorsAndInfos);
     if (finderErrorsAndInfos.Errors.Any()) {
