@@ -1,10 +1,12 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Nuclide&loaddependencies=true
+#addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Nuclide&loaddependencies=true&version=1.0.6977.35396
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
 using Autofac;
+using System.Runtime.Loader;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
@@ -85,6 +87,11 @@ Task("UpdateBuildCake")
       throw new Exception("Your build.cake file has been updated. Please check it in and then retry running it.");
     } else {
       System.IO.File.Delete(tempCakeBuildFileName);
+    }
+    var pinErrorsAndInfos = new ErrorsAndInfos();
+    container.Resolve<IPinnedAddInVersionChecker>().CheckPinnedAddInVersions(new Folder(repositoryFolder), pinErrorsAndInfos);
+    if (pinErrorsAndInfos.Errors.Any()) {
+      throw new Exception(string.Join("\r\n", pinErrorsAndInfos.Errors));
     }
   });
 
