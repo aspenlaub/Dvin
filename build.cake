@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Nuclide&loaddependencies=true&version=1.0.6977.35396
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Nuclide&loaddependencies=true&version=1.0.6979.19822
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
