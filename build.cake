@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Nuclide&loaddependencies=true&version=1.0.6979.19822
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.6982.33079
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +21,8 @@ using Aspenlaub.Net.GitHub.CSharp.Protch.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Nuclide;
 using Aspenlaub.Net.GitHub.CSharp.Nuclide.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Nuclide.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Fusion;
+using Aspenlaub.Net.GitHub.CSharp.Fusion.Interfaces;
 
 masterDebugBinFolder = MakeAbsolute(Directory(masterDebugBinFolder)).FullPath;
 masterReleaseBinFolder = MakeAbsolute(Directory(masterReleaseBinFolder)).FullPath;
@@ -40,7 +42,7 @@ var tempCakeBuildFileName = tempFolder + "/build.cake.new";
 
 var currentGitBranch = GitBranchCurrent(DirectoryPath.FromString("."));
 var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
-var container = new ContainerBuilder().UseGittyTestUtilities().UseNuclideProtchAndGitty().Build();
+var container = new ContainerBuilder().UseGittyTestUtilities().UseFusionNuclideProtchAndGitty().Build();
 
 var projectErrorsAndInfos = new ErrorsAndInfos();
 var projectLogic = container.Resolve<IProjectLogic>();
@@ -84,9 +86,11 @@ Task("UpdateBuildCake")
     if (Regex.Replace(oldContents, @"\s", "") != Regex.Replace(System.IO.File.ReadAllText(tempCakeBuildFileName), @"\s", "")) {
       System.IO.File.Delete(buildCakeFileName);
       System.IO.File.Move(tempCakeBuildFileName, buildCakeFileName); 
-      throw new Exception("Your build.cake file has been updated. Please check it in and then retry running it.");
+      container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder)).Wait();
+      throw new Exception("Your build.cake file has been updated. Please retry running it.");
     } else {
       System.IO.File.Delete(tempCakeBuildFileName);
+      container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder)).Wait();
     }
     var pinErrorsAndInfos = new ErrorsAndInfos();
     container.Resolve<IPinnedAddInVersionChecker>().CheckPinnedAddInVersions(new Folder(repositoryFolder), pinErrorsAndInfos);
