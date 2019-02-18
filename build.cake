@@ -30,7 +30,6 @@ masterReleaseBinFolder = MakeAbsolute(Directory(masterReleaseBinFolder)).FullPat
 var target = Argument("target", "Default");
 
 var solutionId = solution.Substring(solution.LastIndexOf('/') + 1).Replace(".sln", "");
-var oldArtifactsFolder = MakeAbsolute(Directory("./artifacts")).FullPath;
 var debugBinFolder = MakeAbsolute(Directory("./src/bin/Debug")).FullPath;
 var releaseBinFolder = MakeAbsolute(Directory("./src/bin/Release")).FullPath;
 var testResultsFolder = MakeAbsolute(Directory("./TestResults")).FullPath;
@@ -102,7 +101,6 @@ Task("UpdateBuildCake")
 Task("Clean")
   .Description("Clean up artifacts and intermediate output folder")
   .Does(() => {
-    CleanDirectory(oldArtifactsFolder); 
     CleanDirectory(debugBinFolder); 
     CleanDirectory(releaseBinFolder); 
   });
@@ -150,6 +148,16 @@ Task("VerifyThatThereAreNoUncommittedChanges")
     container.Resolve<IGitUtilities>().VerifyThatThereAreNoUncommittedChanges(new Folder(repositoryFolder), uncommittedErrorsAndInfos);
     if (uncommittedErrorsAndInfos.Errors.Any()) {
       throw new Exception(string.Join("\r\n", uncommittedErrorsAndInfos.Errors));
+    }
+  });
+
+Task("VerifyThatThereAreUncommittedChanges")
+  .Description("Verify that there are uncommitted changes")
+  .Does(() => {
+    var uncommittedErrorsAndInfos = new ErrorsAndInfos();
+    container.Resolve<IGitUtilities>().VerifyThatThereAreNoUncommittedChanges(new Folder(repositoryFolder), uncommittedErrorsAndInfos);
+    if (!uncommittedErrorsAndInfos.Errors.Any()) {
+      throw new Exception("The check for uncommitted changes did not fail, this is unexpected");
     }
   });
 
@@ -409,6 +417,14 @@ Task("LittleThings")
   .IsDependentOn("CleanRestorePull").IsDependentOn("UpdateBuildCake")
   .IsDependentOn("VerifyThatThereAreNoUncommittedChanges").IsDependentOn("VerifyThatDevelopmentBranchIsAheadOfMaster")
   .IsDependentOn("VerifyThatMasterBranchDoesNotHaveOpenPullRequests").IsDependentOn("VerifyThatDevelopmentBranchDoesNotHaveOpenPullRequests").IsDependentOn("VerifyThatPullRequestExistsForDevelopmentBranchHeadTip")
+  .Does(() => {
+  });
+
+Task("ValidatePackageUpdate")
+  .WithCriteria(() => currentGitBranch.FriendlyName == "master")
+  .Description("Build and test debug and release, update nuspec")
+  .IsDependentOn("CleanRestorePull").IsDependentOn("VerifyThatThereAreUncommittedChanges")
+  .IsDependentOn("BuildAndTestDebugAndRelease").IsDependentOn("UpdateNuspec")
   .Does(() => {
   });
 
