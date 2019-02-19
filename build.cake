@@ -412,9 +412,15 @@ Task("IgnoreOutdatedBuildCakeAndDoNotPush")
   .Does(() => {
   });
 
+Task("CleanRestorePullUpdateBuildCake")
+  .Description("Clean, restore, pull, update build cake")
+  .IsDependentOn("CleanRestorePull").IsDependentOn("UpdateBuildCake")
+  .Does(() => {
+  });
+
 Task("LittleThings")
   .Description("Default but do not build or test in debug or release, and do not create or push nuget package")
-  .IsDependentOn("CleanRestorePull").IsDependentOn("UpdateBuildCake")
+  .IsDependentOn("CleanRestorePullUpdateBuildCake")
   .IsDependentOn("VerifyThatThereAreNoUncommittedChanges").IsDependentOn("VerifyThatDevelopmentBranchIsAheadOfMaster")
   .IsDependentOn("VerifyThatMasterBranchDoesNotHaveOpenPullRequests").IsDependentOn("VerifyThatDevelopmentBranchDoesNotHaveOpenPullRequests").IsDependentOn("VerifyThatPullRequestExistsForDevelopmentBranchHeadTip")
   .Does(() => {
