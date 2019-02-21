@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.6991.33093
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.6989.35390
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -85,16 +85,26 @@ Task("UpdateBuildCake")
     if (Regex.Replace(oldContents, @"\s", "") != Regex.Replace(System.IO.File.ReadAllText(tempCakeBuildFileName), @"\s", "")) {
       System.IO.File.Delete(buildCakeFileName);
       System.IO.File.Move(tempCakeBuildFileName, buildCakeFileName); 
+	  var autoErrorsAndInfos = new ErrorsAndInfos();
+      // container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder), autoErrorsAndInfos).Wait();
       container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder)).Wait();
+      if (autoErrorsAndInfos.Errors.Any()) {
+        throw new Exception(autoErrorsAndInfos.ErrorsToString());
+      }
       throw new Exception("Your build.cake file has been updated. Please retry running it.");
     } else {
       System.IO.File.Delete(tempCakeBuildFileName);
+	  var autoErrorsAndInfos = new ErrorsAndInfos();
+      // container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder), autoErrorsAndInfos).Wait();
       container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder)).Wait();
+      if (autoErrorsAndInfos.Errors.Any()) {
+        throw new Exception(autoErrorsAndInfos.ErrorsToString());
+      }
     }
     var pinErrorsAndInfos = new ErrorsAndInfos();
     container.Resolve<IPinnedAddInVersionChecker>().CheckPinnedAddInVersions(new Folder(repositoryFolder), pinErrorsAndInfos);
     if (pinErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", pinErrorsAndInfos.Errors));
+      throw new Exception(pinErrorsAndInfos.ErrorsToString());
     }
   });
 
@@ -122,7 +132,7 @@ Task("Pull")
     var pullErrorsAndInfos = new ErrorsAndInfos();
     var developerSettings = await container.Resolve<ISecretRepository>().GetAsync(developerSettingsSecret, pullErrorsAndInfos);
     if (pullErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", pullErrorsAndInfos.Errors));
+      throw new Exception(pullErrorsAndInfos.ErrorsToString());
     }
 
     GitPull(repositoryFolder, developerSettings.Author, developerSettings.Email);
@@ -137,7 +147,7 @@ Task("UpdateNuspec")
     var headTipIdSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
     await container.Resolve<INuSpecCreator>().CreateNuSpecFileIfRequiredOrPresentAsync(true, solutionFileFullName, new List<string> { headTipIdSha }, nuSpecErrorsAndInfos);
     if (nuSpecErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", nuSpecErrorsAndInfos.Errors));
+      throw new Exception(nuSpecErrorsAndInfos.ErrorsToString());
     }
   });
 
@@ -147,7 +157,7 @@ Task("VerifyThatThereAreNoUncommittedChanges")
     var uncommittedErrorsAndInfos = new ErrorsAndInfos();
     container.Resolve<IGitUtilities>().VerifyThatThereAreNoUncommittedChanges(new Folder(repositoryFolder), uncommittedErrorsAndInfos);
     if (uncommittedErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", uncommittedErrorsAndInfos.Errors));
+      throw new Exception(uncommittedErrorsAndInfos.ErrorsToString());
     }
   });
 
@@ -185,7 +195,7 @@ Task("VerifyThatMasterBranchDoesNotHaveOpenPullRequests")
       throw new Exception("There are open pull requests");
     }
     if (noPullRequestsErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", noPullRequestsErrorsAndInfos.Errors));
+      throw new Exception(noPullRequestsErrorsAndInfos.ErrorsToString());
     }
   });
 
@@ -200,7 +210,7 @@ Task("VerifyThatDevelopmentBranchDoesNotHaveOpenPullRequests")
       throw new Exception("There are open pull requests for this development branch");
     }
     if (noPullRequestsErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", noPullRequestsErrorsAndInfos.Errors));
+      throw new Exception(noPullRequestsErrorsAndInfos.ErrorsToString());
     }
   });
 
@@ -215,7 +225,7 @@ Task("VerifyThatPullRequestExistsForDevelopmentBranchHeadTip")
       throw new Exception("There is no pull request for this development branch and its head tip");
     }
     if (noPullRequestsErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", noPullRequestsErrorsAndInfos.Errors));
+      throw new Exception(noPullRequestsErrorsAndInfos.ErrorsToString());
     }
   });
   
@@ -237,7 +247,7 @@ Task("RunTestsOnDebugArtifacts")
       foreach(var projectFile in projectFiles) {
         var project = projectFactory.Load(solutionFileFullName, projectFile.FullPath, projectErrorsAndInfos);
         if (projectErrorsAndInfos.Errors.Any()) {
-            throw new Exception(string.Join("\r\n", projectErrorsAndInfos.Errors));
+            throw new Exception(projectErrorsAndInfos.ErrorsToString());
         }
 		if (projectLogic.TargetsOldFramework(project)) {
             throw new Exception(".Net frameworks 4.6 and 4.5 are no longer supported");
@@ -263,7 +273,7 @@ Task("CopyDebugArtifacts")
     updater.UpdateFolder(new Folder(debugBinFolder.Replace('/', '\\')), new Folder(masterDebugBinFolder.Replace('/', '\\')), 
       FolderUpdateMethod.Assemblies, updaterErrorsAndInfos);
     if (updaterErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", updaterErrorsAndInfos.Errors));
+      throw new Exception(updaterErrorsAndInfos.ErrorsToString());
     }
   });
 
@@ -285,7 +295,7 @@ Task("RunTestsOnReleaseArtifacts")
       foreach(var projectFile in projectFiles) {
         var project = projectFactory.Load(solutionFileFullName, projectFile.FullPath, projectErrorsAndInfos);
         if (projectErrorsAndInfos.Errors.Any()) {
-            throw new Exception(string.Join("\r\n", projectErrorsAndInfos.Errors));
+            throw new Exception(projectErrorsAndInfos.ErrorsToString());
         }
 		if (projectLogic.TargetsOldFramework(project)) {
             throw new Exception(".Net frameworks 4.6 and 4.5 are no longer supported");
@@ -311,7 +321,7 @@ Task("CopyReleaseArtifacts")
     updater.UpdateFolder(new Folder(releaseBinFolder.Replace('/', '\\')), new Folder(masterReleaseBinFolder.Replace('/', '\\')), 
       FolderUpdateMethod.Assemblies, updaterErrorsAndInfos);
     if (updaterErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", updaterErrorsAndInfos.Errors));
+      throw new Exception(updaterErrorsAndInfos.ErrorsToString());
     }
   });
 
@@ -326,7 +336,7 @@ Task("CreateNuGetPackage")
         throw new Exception("The release configuration needs a NuspecFile entry" + "\r\n" + solutionFileFullName + "\r\n" + solutionFileFullName.Replace(".sln", ".csproj"));
     }
     if (projectErrorsAndInfos.Errors.Any()) {
-        throw new Exception(string.Join("\r\n", projectErrorsAndInfos.Errors));
+        throw new Exception(projectErrorsAndInfos.ErrorsToString());
     }
     var folder = new Folder(masterReleaseBinFolder);
     if (!FolderExtensions.LastWrittenFileFullName(folder).EndsWith("nupkg")) {
@@ -360,7 +370,7 @@ Task("PushNuGetPackage")
     var finderErrorsAndInfos = new ErrorsAndInfos();
     var packageToPush = await nugetPackageToPushFinder.FindPackageToPushAsync(new Folder(masterReleaseBinFolder.Replace('/', '\\')), new Folder(repositoryFolder.Replace('/', '\\')), solution.Replace('/', '\\'), finderErrorsAndInfos);
     if (finderErrorsAndInfos.Errors.Any()) {
-      throw new Exception(string.Join("\r\n", finderErrorsAndInfos.Errors));
+      throw new Exception(finderErrorsAndInfos.ErrorsToString());
     }
     if (packageToPush != null && !string.IsNullOrEmpty(packageToPush.PackageFileFullName) && !string.IsNullOrEmpty(packageToPush.FeedUrl) && !string.IsNullOrEmpty(packageToPush.ApiKey)) {
       Information("Pushing " + packageToPush.PackageFileFullName + " to " + packageToPush.FeedUrl + "..");
