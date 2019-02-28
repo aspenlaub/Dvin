@@ -1,7 +1,6 @@
 #load "solution.cake"
-#addin nuget:?package=Cake.Git&version=0.19.0
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.6989.35390
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.6998.34385
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,9 +38,9 @@ var repositoryFolder = MakeAbsolute(DirectoryPath.FromString(".")).FullPath;
 var buildCakeFileName = MakeAbsolute(Directory(".")).FullPath + "/build.cake";
 var tempCakeBuildFileName = tempFolder + "/build.cake.new";
 
-var currentGitBranch = GitBranchCurrent(DirectoryPath.FromString("."));
-var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
 var container = new ContainerBuilder().UseGittyTestUtilities().UseFusionNuclideProtchAndGitty().Build();
+var currentGitBranch = container.Resolve<IGitUtilities>().CheckedOutBranch(new Folder(repositoryFolder));
+var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
 
 var projectErrorsAndInfos = new ErrorsAndInfos();
 var projectLogic = container.Resolve<IProjectLogic>();
@@ -64,7 +63,7 @@ Setup(ctx => {
   Information("Target is: " + target);
   Information("Debug bin folder is: " + debugBinFolder);
   Information("Release bin folder is: " + releaseBinFolder);
-  Information("Current GIT branch is: " + currentGitBranch.FriendlyName);
+  Information("Current GIT branch is: " + currentGitBranch);
   Information("Build cake is: " + buildCakeFileName);
   Information("Latest build cake URL is: " + latestBuildCakeUrl);
 });
@@ -83,20 +82,20 @@ Task("UpdateBuildCake")
       webClient.DownloadFile(latestBuildCakeUrl, tempCakeBuildFileName);
     }
     if (Regex.Replace(oldContents, @"\s", "") != Regex.Replace(System.IO.File.ReadAllText(tempCakeBuildFileName), @"\s", "")) {
+      Information("Updating build.cake");
       System.IO.File.Delete(buildCakeFileName);
       System.IO.File.Move(tempCakeBuildFileName, buildCakeFileName); 
-	  var autoErrorsAndInfos = new ErrorsAndInfos();
-      // container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder), autoErrorsAndInfos).Wait();
-      container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder)).Wait();
+      var autoErrorsAndInfos = new ErrorsAndInfos();
+      container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileIfNecessaryAsync(new Folder(repositoryFolder), autoErrorsAndInfos).Wait();
       if (autoErrorsAndInfos.Errors.Any()) {
         throw new Exception(autoErrorsAndInfos.ErrorsToString());
       }
       throw new Exception("Your build.cake file has been updated. Please retry running it.");
     } else {
+      Information("The build.cake is up-to-date");
       System.IO.File.Delete(tempCakeBuildFileName);
-	  var autoErrorsAndInfos = new ErrorsAndInfos();
-      // container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder), autoErrorsAndInfos).Wait();
-      container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileAsync(new Folder(repositoryFolder)).Wait();
+      var autoErrorsAndInfos = new ErrorsAndInfos();
+      container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileIfNecessaryAsync(new Folder(repositoryFolder), autoErrorsAndInfos).Wait();
       if (autoErrorsAndInfos.Errors.Any()) {
         throw new Exception(autoErrorsAndInfos.ErrorsToString());
       }
@@ -135,7 +134,7 @@ Task("Pull")
       throw new Exception(pullErrorsAndInfos.ErrorsToString());
     }
 
-    GitPull(repositoryFolder, developerSettings.Author, developerSettings.Email);
+    container.Resolve<IGitUtilities>().Pull(new Folder(repositoryFolder), developerSettings.Author, developerSettings.Email);
   });
 
 Task("UpdateNuspec")
@@ -172,7 +171,7 @@ Task("VerifyThatThereAreUncommittedChanges")
   });
 
 Task("VerifyThatDevelopmentBranchIsAheadOfMaster")
-  .WithCriteria(() => currentGitBranch.FriendlyName != "master")
+  .WithCriteria(() => currentGitBranch != "master")
   .Description("Verify that if the development branch is at least one commit after the master")
   .Does(() => {
     if (!container.Resolve<IGitUtilities>().IsBranchAheadOfMaster(new Folder(repositoryFolder))) {
@@ -181,7 +180,7 @@ Task("VerifyThatDevelopmentBranchIsAheadOfMaster")
   });
 
 Task("VerifyThatMasterBranchDoesNotHaveOpenPullRequests")
-  .WithCriteria(() => currentGitBranch.FriendlyName == "master")
+  .WithCriteria(() => currentGitBranch == "master")
   .Description("Verify that the master branch does not have open pull requests")
   .Does(async () => {
     var noPullRequestsErrorsAndInfos = new ErrorsAndInfos();
@@ -200,7 +199,7 @@ Task("VerifyThatMasterBranchDoesNotHaveOpenPullRequests")
   });
 
 Task("VerifyThatDevelopmentBranchDoesNotHaveOpenPullRequests")
-  .WithCriteria(() => currentGitBranch.FriendlyName != "master")
+  .WithCriteria(() => currentGitBranch != "master")
   .Description("Verify that the master branch does not have open pull requests for the checked out development branch")
   .Does(async () => {
     var noPullRequestsErrorsAndInfos = new ErrorsAndInfos();
@@ -215,7 +214,7 @@ Task("VerifyThatDevelopmentBranchDoesNotHaveOpenPullRequests")
   });
 
 Task("VerifyThatPullRequestExistsForDevelopmentBranchHeadTip")
-  .WithCriteria(() => currentGitBranch.FriendlyName != "master")
+  .WithCriteria(() => currentGitBranch != "master")
   .Description("Verify that the master branch does have a pull request for the checked out development branch head tip")
   .Does(async () => {
     var noPullRequestsErrorsAndInfos = new ErrorsAndInfos();
@@ -249,9 +248,9 @@ Task("RunTestsOnDebugArtifacts")
         if (projectErrorsAndInfos.Errors.Any()) {
             throw new Exception(projectErrorsAndInfos.ErrorsToString());
         }
-		if (projectLogic.TargetsOldFramework(project)) {
+        if (projectLogic.TargetsOldFramework(project)) {
             throw new Exception(".Net frameworks 4.6 and 4.5 are no longer supported");
-		}
+        }
         Information("Running tests in " + projectFile.FullPath);
         var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
         var dotNetCoreTestSettings = new DotNetCoreTestSettings {
@@ -265,7 +264,7 @@ Task("RunTestsOnDebugArtifacts")
   });
   
 Task("CopyDebugArtifacts")
-  .WithCriteria(() => currentGitBranch.FriendlyName == "master")
+  .WithCriteria(() => currentGitBranch == "master")
   .Description("Copy Debug artifacts to master Debug binaries folder")
   .Does(() => {
     var updater = new FolderUpdater();
@@ -297,9 +296,9 @@ Task("RunTestsOnReleaseArtifacts")
         if (projectErrorsAndInfos.Errors.Any()) {
             throw new Exception(projectErrorsAndInfos.ErrorsToString());
         }
-		if (projectLogic.TargetsOldFramework(project)) {
+        if (projectLogic.TargetsOldFramework(project)) {
             throw new Exception(".Net frameworks 4.6 and 4.5 are no longer supported");
-		}
+        }
         Information("Running tests in " + projectFile.FullPath);
         var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
         var dotNetCoreTestSettings = new DotNetCoreTestSettings { 
@@ -313,7 +312,7 @@ Task("RunTestsOnReleaseArtifacts")
   });
 
 Task("CopyReleaseArtifacts")
-  .WithCriteria(() => currentGitBranch.FriendlyName == "master")
+  .WithCriteria(() => currentGitBranch == "master")
   .Description("Copy Release artifacts to master Release binaries folder")
   .Does(() => {
     var updater = new FolderUpdater();
@@ -326,7 +325,7 @@ Task("CopyReleaseArtifacts")
   });
 
 Task("CreateNuGetPackage")
-  .WithCriteria(() => currentGitBranch.FriendlyName == "master" && createAndPushPackages)
+  .WithCriteria(() => currentGitBranch == "master" && createAndPushPackages)
   .Description("Create nuget package in the master Release binaries folder")
   .Does(() => {
     var projectErrorsAndInfos = new ErrorsAndInfos();
@@ -363,7 +362,7 @@ Task("CreateNuGetPackage")
   });
 
 Task("PushNuGetPackage")
-  .WithCriteria(() => currentGitBranch.FriendlyName == "master" && createAndPushPackages)
+  .WithCriteria(() => currentGitBranch == "master" && createAndPushPackages)
   .Description("Push nuget package")
   .Does(async () => {
     var nugetPackageToPushFinder = container.Resolve<INugetPackageToPushFinder>();
@@ -437,7 +436,7 @@ Task("LittleThings")
   });
 
 Task("ValidatePackageUpdate")
-  .WithCriteria(() => currentGitBranch.FriendlyName == "master")
+  .WithCriteria(() => currentGitBranch == "master")
   .Description("Build and test debug and release, update nuspec")
   .IsDependentOn("CleanRestorePull").IsDependentOn("VerifyThatThereAreUncommittedChanges")
   .IsDependentOn("BuildAndTestDebugAndRelease").IsDependentOn("UpdateNuspec")
