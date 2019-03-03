@@ -23,7 +23,7 @@
     <None Remove="Test\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.Dvin" Version="1.0.7000.26076" />
+    <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.Dvin" Version="1.0.7001.22096" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>
