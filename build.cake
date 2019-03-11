@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git&version=0.19.0
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.7000.24313
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.7006.31539
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -102,7 +102,7 @@ Task("UpdateBuildCake")
       }
     }
     var pinErrorsAndInfos = new ErrorsAndInfos();
-    container.Resolve<IPinnedAddInVersionChecker>().CheckPinnedAddInVersions(new Folder(repositoryFolder), pinErrorsAndInfos);
+    container.Resolve<IPinnedAddInVersionChecker>().CheckPinnedAddInVersionsAsync(new Folder(repositoryFolder), pinErrorsAndInfos).Wait();
     if (pinErrorsAndInfos.Errors.Any()) {
       throw new Exception(pinErrorsAndInfos.ErrorsToString());
     }
