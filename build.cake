@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git&version=0.19.0
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.7006.31539
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.7014.22847
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -271,7 +271,7 @@ Task("CopyDebugArtifacts")
     var updater = new FolderUpdater();
     var updaterErrorsAndInfos = new ErrorsAndInfos();
     updater.UpdateFolder(new Folder(debugBinFolder.Replace('/', '\\')), new Folder(masterDebugBinFolder.Replace('/', '\\')), 
-      FolderUpdateMethod.Assemblies, updaterErrorsAndInfos);
+      FolderUpdateMethod.AssembliesButNotIfOnlySlightlyChanged, updaterErrorsAndInfos);
     if (updaterErrorsAndInfos.Errors.Any()) {
       throw new Exception(updaterErrorsAndInfos.ErrorsToString());
     }
@@ -319,7 +319,7 @@ Task("CopyReleaseArtifacts")
     var updater = new FolderUpdater();
     var updaterErrorsAndInfos = new ErrorsAndInfos();
     updater.UpdateFolder(new Folder(releaseBinFolder.Replace('/', '\\')), new Folder(masterReleaseBinFolder.Replace('/', '\\')), 
-      FolderUpdateMethod.Assemblies, updaterErrorsAndInfos);
+      FolderUpdateMethod.AssembliesButNotIfOnlySlightlyChanged, updaterErrorsAndInfos);
     if (updaterErrorsAndInfos.Errors.Any()) {
       throw new Exception(updaterErrorsAndInfos.ErrorsToString());
     }
@@ -375,6 +375,13 @@ Task("PushNuGetPackage")
     if (packageToPush != null && !string.IsNullOrEmpty(packageToPush.PackageFileFullName) && !string.IsNullOrEmpty(packageToPush.FeedUrl) && !string.IsNullOrEmpty(packageToPush.ApiKey)) {
       Information("Pushing " + packageToPush.PackageFileFullName + " to " + packageToPush.FeedUrl + "..");
       NuGetPush(packageToPush.PackageFileFullName, new NuGetPushSettings { Source = packageToPush.FeedUrl });
+    }
+    var pushedHeadTipShaRepository = container.Resolve<IPushedHeadTipShaRepository>();
+    var pushedErrorsAndInfos = new ErrorsAndInfos();
+    var headTipSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
+    pushedHeadTipShaRepository.Add(headTipSha, pushedErrorsAndInfos);
+    if (pushedErrorsAndInfos.Errors.Any()) {
+      throw new Exception(pushedErrorsAndInfos.ErrorsToString());
     }
   });
 
