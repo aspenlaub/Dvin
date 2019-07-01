@@ -98,7 +98,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
             var ports = new List<int>();
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
-            foreach(var s in errorsAndInfos.Infos.Where(i => i.Contains("TCP") && i.Contains("LISTENING") && i.Contains(':'))) {
+            foreach(var s in errorsAndInfos.Infos.Where(i => i.Contains("TCP") && (i.Contains("LISTENING") || i.Contains("ABHÖREN")) && i.Contains(':'))) {
                 var pos = s.IndexOf(':');
                 var pos2 = s.IndexOf(' ', pos);
 
