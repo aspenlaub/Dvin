@@ -82,7 +82,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                     processStarter.WaitForExit(process);
                 }
             }
-            return errorsAndInfos.Infos.Any(i => i.Contains("TCP") && (i.Contains("LISTENING") || i.Contains("ABHÖREN")) && i.Contains($":{dvinApp.Port} "));
+            return errorsAndInfos.Infos.Any(i => i.Contains("TCP") && (i.Contains("LISTENING") || i.Contains("ABHÖREN") || i.Contains("ABH™REN")) && i.Contains($":{dvinApp.Port} "));
         }
 
         public static bool HasAppBeenPublishedAfterLatestSourceChanges(this IDvinApp dvinApp, IFileSystemService fileSystemService) {
