@@ -26,7 +26,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
             vContainer = builder.Build();
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanCreateTestClient() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home";
@@ -40,7 +40,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanHandleCrashes() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Home/Crash";
@@ -85,7 +85,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
                 .Where(f => File.ReadAllText(f).Contains("This is a deliberate crash")).ToList();
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanPublishMyself() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Publish";

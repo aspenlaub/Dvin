@@ -168,7 +168,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanStartSampleApp() {
             var repository = vContainer.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
@@ -224,7 +224,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task SampleAppCanPublishItselfWhileRunning() {
             var repository = vContainer.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
