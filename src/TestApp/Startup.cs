@@ -24,9 +24,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp {
                 .AddMvc(config => config.Filters.Add(new DvinExceptionFilterAttribute()))
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            var builder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter()).RegisterForDvin();
-            var container = builder.Build();
-            services.AddSingleton(container.Resolve<IDvinRepository>());
+            services.UseDvinAndPegh(new DummyCsArgumentPrompter());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
