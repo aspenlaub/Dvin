@@ -6,10 +6,8 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Repositories {
     [TestClass]
@@ -17,8 +15,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Repositories {
         private readonly IContainer vContainer;
 
         public DvinRepositoryTest() {
-            var csArgumentPrompterMock = new Mock<ICsArgumentPrompter>();
-            var builder = new ContainerBuilder().RegisterForPegh(csArgumentPrompterMock.Object).RegisterForDvin();
+            var builder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter()).RegisterForDvin();
             vContainer = builder.Build();
         }
 

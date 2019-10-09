@@ -7,7 +7,6 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities {
     [TestClass]
@@ -15,8 +14,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities {
         private readonly IContainer vContainer;
 
         public SecretDvinAppsTest() {
-            var csArgumentPrompterMock = new Mock<ICsArgumentPrompter>();
-            var builder = new ContainerBuilder().RegisterForPegh(csArgumentPrompterMock.Object);
+            var builder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter());
             vContainer = builder.Build();
         }
 
