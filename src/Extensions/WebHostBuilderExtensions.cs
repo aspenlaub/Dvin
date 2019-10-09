@@ -1,5 +1,6 @@
 ﻿using System;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
@@ -11,9 +12,9 @@ using Microsoft.AspNetCore.Hosting;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
     public static class WebHostBuilderExtensions {
         public static IWebHostBuilder UseDvin(this IWebHostBuilder builder, string dvinAppId, bool release, string[] mainProgramArgs) {
-            var peghContainerBuilder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter());
-            var peghContainer = peghContainerBuilder.Build();
-            var dvinRepository = peghContainer.Resolve<IDvinRepository>();
+            var containerBuilder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter()).RegisterForDvin();
+            var container = containerBuilder.Build();
+            var dvinRepository = container.Resolve<IDvinRepository>();
 
             var errorsAndInfos = new ErrorsAndInfos();
             var dvinApp = dvinRepository.LoadAsync(dvinAppId, errorsAndInfos).Result;
