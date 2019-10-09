@@ -1,7 +1,6 @@
 ﻿using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Autofac;
 using Microsoft.AspNetCore.Builder;
@@ -27,7 +26,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp {
 
             var builder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter()).RegisterForDvin();
             var container = builder.Build();
-            services.AddSingleton<IDvinRepository>(container.Resolve<IDvinRepository>());
+            services.AddSingleton(container.Resolve<IDvinRepository>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
