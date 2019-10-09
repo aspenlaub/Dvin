@@ -3,15 +3,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories {
     public class DvinRepository : IDvinRepository {
-        private readonly IComponentProvider vComponentProvider;
+        protected readonly IFolderResolver FolderResolver;
+        protected readonly ISecretRepository SecretRepository;
 
-        public DvinRepository(IComponentProvider componentProvider) {
-            vComponentProvider = componentProvider;
+        public DvinRepository(IFolderResolver folderResolver, ISecretRepository secretRepository) {
+            FolderResolver = folderResolver;
+            SecretRepository = secretRepository;
         }
 
         public async Task<IList<DvinApp>> LoadAsync(IErrorsAndInfos errorsAndInfos) {
@@ -20,18 +21,17 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories {
 
         private async Task<IList<DvinApp>> LoadAsync(bool resolve, IErrorsAndInfos errorsAndInfos) {
             var dvinAppsSecret = new SecretDvinApps();
-            var repository = new SecretRepository(new ComponentProvider());
-            var secretDvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
+            var secretDvinApps = await SecretRepository.GetAsync(dvinAppsSecret, errorsAndInfos);
             if (!resolve || errorsAndInfos.AnyErrors()) { return secretDvinApps; }
 
-            secretDvinApps.ResolveFolders(vComponentProvider, errorsAndInfos);
+            secretDvinApps.ResolveFolders(FolderResolver, errorsAndInfos);
             return secretDvinApps;
         }
 
         public async Task<DvinApp> LoadAsync(string id, IErrorsAndInfos errorsAndInfos) {
             var dvinApps = await LoadAsync(false, errorsAndInfos);
             var dvinApp = dvinApps.FirstOrDefault(d => d.Id == id);
-            dvinApp?.ResolveFolders(vComponentProvider, errorsAndInfos);
+            dvinApp?.ResolveFolders(FolderResolver, errorsAndInfos);
             return dvinApp;
         }
     }

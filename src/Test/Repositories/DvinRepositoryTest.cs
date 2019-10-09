@@ -1,25 +1,30 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Repositories {
     [TestClass]
     public class DvinRepositoryTest {
-        private readonly IComponentProvider vComponentProvider;
+        private readonly IContainer vContainer;
 
         public DvinRepositoryTest() {
-            vComponentProvider = new ComponentProvider();
+            var csArgumentPrompterMock = new Mock<ICsArgumentPrompter>();
+            var builder = new ContainerBuilder().RegisterForPegh(csArgumentPrompterMock.Object).RegisterForDvin();
+            vContainer = builder.Build();
         }
 
         [TestMethod]
         public async Task CanGetDvinApps() {
-            var sut = new DvinRepository(vComponentProvider);
+            var sut = vContainer.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
             var apps = await sut.LoadAsync(errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
@@ -34,7 +39,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Repositories {
 
         [TestMethod]
         public async Task CanGetDvinApp() {
-            var sut = new DvinRepository(vComponentProvider);
+            var sut = vContainer.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
             var apps = await sut.LoadAsync(errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());

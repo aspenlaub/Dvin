@@ -1,17 +1,19 @@
 ﻿using System;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
+using Autofac;
 using Microsoft.AspNetCore.Hosting;
 // ReSharper disable UnusedMember.Global
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
     public static class WebHostBuilderExtensions {
         public static IWebHostBuilder UseDvin(this IWebHostBuilder builder, string dvinAppId, bool release, string[] mainProgramArgs) {
-            var componentProvider = new ComponentProvider();
-            var dvinRepository = new DvinRepository(componentProvider);
+            var peghContainerBuilder = new ContainerBuilder().RegisterForPegh(null);
+            var peghContainer = peghContainerBuilder.Build();
+            var dvinRepository = peghContainer.Resolve<IDvinRepository>();
 
             var errorsAndInfos = new ErrorsAndInfos();
             var dvinApp = dvinRepository.LoadAsync(dvinAppId, errorsAndInfos).Result;

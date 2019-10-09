@@ -29,11 +29,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
         [XmlElement("exceptionlogfolder")]
         public string ExceptionLogFolder { get; set; }
 
-        public void ResolveFolders(IComponentProvider componentProvider, IErrorsAndInfos errorsAndInfos) {
-            SolutionFolder = componentProvider.FolderResolver.Resolve(SolutionFolder, errorsAndInfos).FullName;
-            ReleaseFolder = componentProvider.FolderResolver.Resolve(ReleaseFolder, errorsAndInfos).FullName;
-            PublishFolder = componentProvider.FolderResolver.Resolve(PublishFolder, errorsAndInfos).FullName;
-            ExceptionLogFolder = componentProvider.FolderResolver.Resolve(ExceptionLogFolder, errorsAndInfos).FullName;
+        public void ResolveFolders(IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos) {
+            SolutionFolder = folderResolver.Resolve(SolutionFolder, errorsAndInfos).FullName;
+            ReleaseFolder = folderResolver.Resolve(ReleaseFolder, errorsAndInfos).FullName;
+            PublishFolder = folderResolver.Resolve(PublishFolder, errorsAndInfos).FullName;
+            ExceptionLogFolder = folderResolver.Resolve(ExceptionLogFolder, errorsAndInfos).FullName;
         }
     }
 }

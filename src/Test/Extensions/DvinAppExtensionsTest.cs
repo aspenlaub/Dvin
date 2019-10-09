@@ -10,22 +10,24 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Helpers;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
     [TestClass]
     public class DvinAppExtensionsTest {
-        private readonly IComponentProvider vComponentProvider;
+        private readonly IContainer vContainer;
 
         public DvinAppExtensionsTest() {
-            vComponentProvider = new ComponentProvider();
+            var csArgumentPrompterMock = new Mock<ICsArgumentPrompter>();
+            var builder = new ContainerBuilder().RegisterForPegh(csArgumentPrompterMock.Object).RegisterForDvin();
+            vContainer = builder.Build();
         }
 
         [TestMethod]
@@ -150,7 +152,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
         [TestMethod]
         public async Task CanPublishApps() {
-            var repository = new DvinRepository(vComponentProvider);
+            var repository = vContainer.Resolve<IDvinRepository>();
             var fileSystemService = new FileSystemService();
             var errorsAndInfos = new ErrorsAndInfos();
             var apps = await repository.LoadAsync(errorsAndInfos);
@@ -169,7 +171,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
         [TestMethod]
         public async Task CanStartSampleApp() {
-            var repository = new DvinRepository(vComponentProvider);
+            var repository = vContainer.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
             var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
@@ -225,7 +227,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
         [TestMethod]
         public async Task SampleAppCanPublishItselfWhileRunning() {
-            var repository = new DvinRepository(vComponentProvider);
+            var repository = vContainer.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
             var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());

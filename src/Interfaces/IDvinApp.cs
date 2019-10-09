@@ -1,5 +1,6 @@
-﻿// ReSharper disable UnusedMember.Global
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+﻿using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedMemberInSuper.Global
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces {
     public interface IDvinApp {
@@ -12,6 +13,6 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces {
         string PublishFolder { get; set; }
         string ExceptionLogFolder { get; set; }
 
-        void ResolveFolders(IComponentProvider componentProvider, IErrorsAndInfos errorsAndInfos);
+        void ResolveFolders(IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos);
     }
 }
