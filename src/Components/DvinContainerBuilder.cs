@@ -18,5 +18,23 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
             services.AddTransient<IDvinRepository, DvinRepository>();
             return services;
         }
+
+        public static IServiceCollection UsePegh(this IServiceCollection services, ICsArgumentPrompter csArgumentPrompter) {
+            services.AddSingleton(csArgumentPrompter);
+            services.AddTransient<ICsLambdaCompiler, CsLambdaCompiler>();
+            services.AddTransient<IDisguiser, Disguiser>();
+            services.AddTransient<IFolderDeleter, FolderDeleter>();
+            services.AddTransient<IFolderResolver, FolderResolver>();
+            services.AddTransient<IFolderUpdater, FolderUpdater>();
+            services.AddTransient<IPassphraseProvider, PassphraseProvider>();
+            services.AddTransient<IPeghEnvironment, PeghEnvironment>();
+            services.AddTransient<IPrimeNumberGenerator, PrimeNumberGenerator>();
+            services.AddTransient<ISecretRepository, SecretRepository>();
+            services.AddTransient<IStringCrypter, StringCrypter>();
+            services.AddTransient<IXmlDeserializer, XmlDeserializer>();
+            services.AddTransient<IXmlSerializer, XmlSerializer>();
+            services.AddTransient<IXmlSchemer, XmlSchemer>();
+            return services;
+        }
     }
 }
