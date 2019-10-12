@@ -22,7 +22,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
         private readonly IContainer vContainer;
 
         public TvinstControllerTest() {
-            var builder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter()).RegisterForDvin();
+            var builder = new ContainerBuilder().UseDvinAndPegh(new DummyCsArgumentPrompter());
             vContainer = builder.Build();
         }
 
@@ -85,7 +85,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
                 .Where(f => File.ReadAllText(f).Contains("This is a deliberate crash")).ToList();
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task CanPublishMyself() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Publish";

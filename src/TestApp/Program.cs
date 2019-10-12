@@ -12,9 +12,9 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp {
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
 #if DEBUG
-                .UseDvin(Constants.DvinSampleAppId, false, args)
+                .UseDvinAndPegh(Constants.DvinSampleAppId, false, args)
 #else
-                .UseDvin(Constants.DvinSampleAppId, true, args)
+                .UseDvinAndPegh(Constants.DvinSampleAppId, true, args)
 #endif
                 .UseStartup<Startup>();
     }
