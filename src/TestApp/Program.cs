@@ -14,7 +14,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp {
 #if DEBUG
                 .UseDvin(Constants.DvinSampleAppId, false, args)
 #else
-                .UseDvinAndPegh(Constants.DvinSampleAppId, true, args)
+                .UseDvin(Constants.DvinSampleAppId, true, args)
 #endif
                 .UseStartup<Startup>();
     }
