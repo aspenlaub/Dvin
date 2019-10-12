@@ -85,7 +85,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.TestApp.Test {
                 .Where(f => File.ReadAllText(f).Contains("This is a deliberate crash")).ToList();
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public async Task CanPublishMyself() {
             var dvinApp = await GetDvinApp();
             var url = $"http://localhost:{dvinApp.Port}/Publish";

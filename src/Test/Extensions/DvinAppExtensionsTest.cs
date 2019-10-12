@@ -224,7 +224,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             }
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public async Task SampleAppCanPublishItselfWhileRunning() {
             var repository = vContainer.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
