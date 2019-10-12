@@ -7,7 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
     public static class DvinContainerBuilder {
-        public static ContainerBuilder RegisterForDvin(this ContainerBuilder builder) {
+        public static ContainerBuilder UseDvinAndPegh(this ContainerBuilder builder, ICsArgumentPrompter csArgumentPrompter) {
+            builder.UsePegh(csArgumentPrompter);
             builder.RegisterType<DvinRepository>().As<IDvinRepository>();
             return builder;
         }

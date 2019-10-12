@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
     public static class WebHostBuilderExtensions {
-        public static IWebHostBuilder UseDvin(this IWebHostBuilder builder, string dvinAppId, bool release, string[] mainProgramArgs) {
-            var containerBuilder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter()).RegisterForDvin();
+        public static IWebHostBuilder UseDvinAndPegh(this IWebHostBuilder builder, string dvinAppId, bool release, string[] mainProgramArgs) {
+            var containerBuilder = new ContainerBuilder().UseDvinAndPegh(new DummyCsArgumentPrompter());
             var container = containerBuilder.Build();
             var dvinRepository = container.Resolve<IDvinRepository>();
 

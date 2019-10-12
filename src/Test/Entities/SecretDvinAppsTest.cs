@@ -14,7 +14,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities {
         private readonly IContainer vContainer;
 
         public SecretDvinAppsTest() {
-            var builder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter());
+            var builder = new ContainerBuilder().UsePegh(new DummyCsArgumentPrompter());
             vContainer = builder.Build();
         }
 

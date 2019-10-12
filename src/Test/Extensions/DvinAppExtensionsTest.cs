@@ -25,7 +25,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
         private readonly IContainer vContainer;
 
         public DvinAppExtensionsTest() {
-            var builder = new ContainerBuilder().RegisterForPegh(new DummyCsArgumentPrompter()).RegisterForDvin();
+            var builder = new ContainerBuilder().UseDvinAndPegh(new DummyCsArgumentPrompter());
             vContainer = builder.Build();
         }
 
