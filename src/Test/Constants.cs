@@ -1,5 +1,5 @@
 ﻿namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test {
     public class Constants {
-        public const string DvinSampleAppId = "Dvin.TestApp";
+        public const string DvinSampleAppId = "DvinTestApp";
     }
 }
