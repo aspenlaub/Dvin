@@ -1,5 +1,4 @@
 ﻿using System;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Attributes;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
@@ -25,8 +24,6 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             if (errorsAndInfos.AnyErrors()) {
                 throw new Exception(errorsAndInfos.ErrorsToString());
             }
-
-            DvinExceptionFilterAttribute.SetExceptionLogFolder(new Folder(dvinApp.ExceptionLogFolder));
 
             builder.UseUrls($"http://localhost:{dvinApp.Port}");
             return builder;
