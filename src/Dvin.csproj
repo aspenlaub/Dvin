@@ -4,11 +4,15 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Aspenlaub.Net.GitHub.CSharp.Dvin</AssemblyName>
     <RootNamespace>Aspenlaub.Net.GitHub.CSharp.Dvin</RootNamespace>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateBuildInfoConfigFile>false</GenerateBuildInfoConfigFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Deterministic>false</Deterministic>
     <RazorCompileToolset>PrecompilationTool</RazorCompileToolset>
+    <AssemblyTitle>Aspenlaub.Net.GitHub.CSharp.Dvin</AssemblyTitle>
+    <AssemblyProduct>Aspenlaub.Net.GitHub.CSharp.Dvin</AssemblyProduct>
+    <VersionDays>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse("2019-07-24"))).Days.ToString())</VersionDays>
+    <VersionMinutes>$([System.Math]::Floor($([System.DateTime]::UtcNow.Subtract($([System.DateTime]::UtcNow.Date)).TotalMinutes)).ToString())</VersionMinutes>
+    <Version>2.0.$(VersionDays).$(VersionMinutes)</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
@@ -26,7 +30,7 @@
     <None Remove="Test\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.Pegh" Version="1.0.7228.29540" />
+    <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.Pegh" Version="2.0.90.1091" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0" />
   </ItemGroup>
 </Project>
