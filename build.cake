@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git&version=0.20.0
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=1.0.7231.30143
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=2.0.90.1247
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +14,6 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Gitty;
 using Aspenlaub.Net.GitHub.CSharp.Gitty.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Gitty.Entities;
-using Aspenlaub.Net.GitHub.CSharp.Gitty.TestUtilities;
 using Aspenlaub.Net.GitHub.CSharp.Protch;
 using Aspenlaub.Net.GitHub.CSharp.Protch.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Protch.Entities;
@@ -39,7 +38,7 @@ var repositoryFolder = MakeAbsolute(DirectoryPath.FromString(".")).FullPath;
 var buildCakeFileName = MakeAbsolute(Directory(".")).FullPath + "/build.cake";
 var tempCakeBuildFileName = tempFolder + "/build.cake.new";
 
-var container = new ContainerBuilder().UseGittyTestUtilities().UseFusionNuclideProtchAndGitty(new DummyCsArgumentPrompter()).Build();
+var container = new ContainerBuilder().UseFusionNuclideProtchAndGitty(new DummyCsArgumentPrompter()).Build();
 var currentGitBranch = container.Resolve<IGitUtilities>().CheckedOutBranch(new Folder(repositoryFolder));
 var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
 
