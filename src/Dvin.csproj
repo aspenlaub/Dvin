@@ -33,6 +33,14 @@
     <None Remove="Test\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="packageicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packageicon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Aspenlaub.Net.GitHub.CSharp.Pegh" Version="2.0.94.880" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0" />
   </ItemGroup>
