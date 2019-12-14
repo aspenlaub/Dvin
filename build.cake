@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git&version=0.20.0
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=2.0.141.1258
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Aspenlaub.Net.GitHub.CSharp.Fusion&loaddependencies=true&version=2.0.143.753
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +22,9 @@ using Aspenlaub.Net.GitHub.CSharp.Nuclide.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Nuclide.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Fusion;
 using Aspenlaub.Net.GitHub.CSharp.Fusion.Interfaces;
+using FolderUpdater = Aspenlaub.Net.GitHub.CSharp.Fusion.FolderUpdater;
+using JsonDepsDifferencer = Aspenlaub.Net.GitHub.CSharp.Fusion.JsonDepsDifferencer;
+using FolderUpdateMethod = Aspenlaub.Net.GitHub.CSharp.Fusion.Interfaces.FolderUpdateMethod;
 
 masterDebugBinFolder = MakeAbsolute(Directory(masterDebugBinFolder)).FullPath;
 masterReleaseBinFolder = MakeAbsolute(Directory(masterReleaseBinFolder)).FullPath;
@@ -274,6 +277,7 @@ Task("CopyDebugArtifacts")
     if (updaterErrorsAndInfos.Errors.Any()) {
       throw new Exception(updaterErrorsAndInfos.ErrorsToString());
     }
+    updaterErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
   });
 
 Task("ReleaseBuild")
@@ -322,6 +326,7 @@ Task("CopyReleaseArtifacts")
     if (updaterErrorsAndInfos.Errors.Any()) {
       throw new Exception(updaterErrorsAndInfos.ErrorsToString());
     }
+    updaterErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
   });
 
 Task("CreateNuGetPackage")
