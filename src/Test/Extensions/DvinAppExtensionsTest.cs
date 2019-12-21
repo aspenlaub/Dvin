@@ -194,26 +194,24 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
             Assert.IsTrue(dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(fileSystemService));
 
-            using (var process = dvinApp.Start(fileSystemService, errorsAndInfos)) {
-                Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-                Assert.IsNotNull(process);
-                var url = $"http://localhost:{dvinApp.Port}/Home";
-                Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
-                Assert.IsTrue(dvinApp.IsPortListenedTo(), errorsAndInfos.ErrorsToString());
-                try {
-                    using (var client = new HttpClient()) {
-                        var response = await client.GetAsync(url);
-                        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-                        var content = await response.Content.ReadAsStringAsync();
-                        Assert.IsTrue(content.Contains("Hello World says your dvin app"));
-                    }
-                } catch {
-                    KillProcess(process);
-                    throw;
-                }
-
+            using var process = dvinApp.Start(fileSystemService, errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+            Assert.IsNotNull(process);
+            var url = $"http://localhost:{dvinApp.Port}/Home";
+            Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
+            Assert.IsTrue(dvinApp.IsPortListenedTo(), errorsAndInfos.ErrorsToString());
+            try {
+                using var client = new HttpClient();
+                var response = await client.GetAsync(url);
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                var content = await response.Content.ReadAsStringAsync();
+                Assert.IsTrue(content.Contains("Hello World says your dvin app"));
+            } catch {
                 KillProcess(process);
+                throw;
             }
+
+            KillProcess(process);
         }
 
         private static void KillProcess(Process process) {
@@ -245,30 +243,28 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
             var lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
             Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
 
-            using (var process = dvinApp.Start(fileSystemService, errorsAndInfos)) {
-                Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-                Assert.IsNotNull(process);
-                var url = $"http://localhost:{dvinApp.Port}/Publish";
-                Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
-                Assert.IsTrue(dvinApp.IsPortListenedTo(), errorsAndInfos.ErrorsToString());
-                try {
-                    using (var client = new HttpClient()) {
-                        timeBeforePublishing = DateTime.Now;
-                        var response = await client.GetAsync(url);
-                        var content = await response.Content.ReadAsStringAsync();
-                        Assert.AreNotEqual(HttpStatusCode.InternalServerError, response.StatusCode, content);
-                        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-                        Assert.IsTrue(content.Contains("Your dvin app just published itself"), content);
-                        lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
-                        Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
-                    }
-                } catch {
-                    KillProcess(process);
-                    throw;
-                }
-
+            using var process = dvinApp.Start(fileSystemService, errorsAndInfos);
+            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+            Assert.IsNotNull(process);
+            var url = $"http://localhost:{dvinApp.Port}/Publish";
+            Wait.Until(() => dvinApp.IsPortListenedTo(), TimeSpan.FromSeconds(5));
+            Assert.IsTrue(dvinApp.IsPortListenedTo(), errorsAndInfos.ErrorsToString());
+            try {
+                using var client = new HttpClient();
+                timeBeforePublishing = DateTime.Now;
+                var response = await client.GetAsync(url);
+                var content = await response.Content.ReadAsStringAsync();
+                Assert.AreNotEqual(HttpStatusCode.InternalServerError, response.StatusCode, content);
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                Assert.IsTrue(content.Contains("Your dvin app just published itself"), content);
+                lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
+                Assert.IsTrue(lastPublishedAt > timeBeforePublishing);
+            } catch {
                 KillProcess(process);
+                throw;
             }
+
+            KillProcess(process);
         }
 
     }

@@ -1,5 +1,4 @@
-﻿using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
-// ReSharper disable UnusedMember.Global
+﻿// ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedMemberInSuper.Global
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces {
@@ -8,11 +7,10 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces {
         string Description { get; set; }
         string Executable { get; set; }
         int Port { get; set; }
+        bool AreFoldersBeingResolved { get; set; }
         string SolutionFolder { get; set; }
         string ReleaseFolder { get; set; }
         string PublishFolder { get; set; }
         string ExceptionLogFolder { get; set; }
-
-        void ResolveFolders(IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos);
     }
 }

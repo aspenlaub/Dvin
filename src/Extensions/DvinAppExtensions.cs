@@ -223,5 +223,14 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             var publishedFiles = Artifacts(fileSystemService, new Folder(dvinApp.PublishFolder));
             return publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
         }
+
+        public static void ResolveFolders(this IDvinApp dvinApp, IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos) {
+            dvinApp.AreFoldersBeingResolved = true;
+            dvinApp.SolutionFolder = folderResolver.Resolve(dvinApp.SolutionFolder, errorsAndInfos).FullName;
+            dvinApp.ReleaseFolder = folderResolver.Resolve(dvinApp.ReleaseFolder, errorsAndInfos).FullName;
+            dvinApp.PublishFolder = folderResolver.Resolve(dvinApp.PublishFolder, errorsAndInfos).FullName;
+            dvinApp.ExceptionLogFolder = folderResolver.Resolve(dvinApp.ExceptionLogFolder, errorsAndInfos).FullName;
+            dvinApp.AreFoldersBeingResolved = false;
+        }
     }
 }

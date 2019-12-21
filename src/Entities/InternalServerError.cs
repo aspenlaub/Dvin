@@ -1,4 +1,5 @@
 ﻿using System.Net;
+// ReSharper disable UnusedMember.Global
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
     public class InternalServerError {

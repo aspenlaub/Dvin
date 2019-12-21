@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
     public class DvinApp : IDvinApp {
@@ -17,23 +18,43 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
         [XmlAttribute("port")]
         public int Port { get; set; }
 
+        [XmlIgnore]
+        public bool AreFoldersBeingResolved { get; set; }
+
+        private string vSolutionFolder;
         [XmlElement("solutionfolder")]
-        public string SolutionFolder { get; set; }
+        public string SolutionFolder {
+            get => ReturnFolderThrowExceptionIfUnresolved(vSolutionFolder);
+            set => vSolutionFolder = value;
+        }
 
+        private string vReleaseFolder;
         [XmlElement("releasefolder")]
-        public string ReleaseFolder { get; set; }
+        public string ReleaseFolder {
+            get => ReturnFolderThrowExceptionIfUnresolved(vReleaseFolder);
+            set => vReleaseFolder = value;
+        }
 
+        private string vPublishFolder;
         [XmlElement("publishfolder")]
-        public string PublishFolder { get; set; }
+        public string PublishFolder {
+            get => ReturnFolderThrowExceptionIfUnresolved(vPublishFolder);
+            set => vPublishFolder = value;
+        }
 
+        private string vExceptionLogFolder;
         [XmlElement("exceptionlogfolder")]
-        public string ExceptionLogFolder { get; set; }
+        public string ExceptionLogFolder {
+            get => ReturnFolderThrowExceptionIfUnresolved(vExceptionLogFolder);
+            set => vExceptionLogFolder = value;
+        }
 
-        public void ResolveFolders(IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos) {
-            SolutionFolder = folderResolver.Resolve(SolutionFolder, errorsAndInfos).FullName;
-            ReleaseFolder = folderResolver.Resolve(ReleaseFolder, errorsAndInfos).FullName;
-            PublishFolder = folderResolver.Resolve(PublishFolder, errorsAndInfos).FullName;
-            ExceptionLogFolder = folderResolver.Resolve(ExceptionLogFolder, errorsAndInfos).FullName;
+        private string ReturnFolderThrowExceptionIfUnresolved(string folder) {
+            if (AreFoldersBeingResolved || !folder.Contains("$")) {
+                return folder;
+            }
+
+            throw new Exception($"{nameof(DvinApp)} folders have not resolved, please use extension method {nameof(DvinAppExtensions.ResolveFolders)}");
         }
     }
 }
