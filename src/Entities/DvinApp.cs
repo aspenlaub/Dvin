@@ -54,7 +54,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
                 return folder;
             }
 
-            throw new Exception($"{nameof(DvinApp)} folders have not resolved, please use extension method {nameof(DvinAppExtensions.ResolveFolders)}");
+            throw new Exception($"{nameof(DvinApp)} folders have not resolved, please use the {nameof(IDvinApp)} extension method");
         }
     }
 }
