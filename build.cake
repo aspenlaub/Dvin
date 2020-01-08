@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git&version=0.20.0
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:https://www.aspenlaub.net/nuget/?package=Fusion&loaddependencies=true&version=2.0.150.883
+#addin nuget:https://www.aspenlaub.net/nuget/?package=Fusion&loaddependencies=true&version=2.0.168.1096
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +41,7 @@ var repositoryFolder = MakeAbsolute(DirectoryPath.FromString(".")).FullPath;
 var buildCakeFileName = MakeAbsolute(Directory(".")).FullPath + "/build.cake";
 var tempCakeBuildFileName = tempFolder + "/build.cake.new";
 
-var mainNugetFeedId = NugetFeed.AspenlaubNetFeed;
+var mainNugetFeedId = NugetFeed.AspenlaubLocalFeed;
 
 var container = FusionContainerBuilder.CreateContainerUsingFusionNuclideProtchAndGitty();
 var currentGitBranch = container.Resolve<IGitUtilities>().CheckedOutBranch(new Folder(repositoryFolder));
