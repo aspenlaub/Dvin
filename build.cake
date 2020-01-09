@@ -379,7 +379,7 @@ Task("PushNuGetPackage")
       throw new Exception(finderErrorsAndInfos.ErrorsToString());
     }
     var headTipSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
-    if (packageToPush != null && !string.IsNullOrEmpty(packageToPush.PackageFileFullName) && !string.IsNullOrEmpty(packageToPush.FeedUrl) && !string.IsNullOrEmpty(packageToPush.ApiKey)) {
+    if (packageToPush != null && !string.IsNullOrEmpty(packageToPush.PackageFileFullName) && !string.IsNullOrEmpty(packageToPush.FeedUrl)) {
       Information("Pushing " + packageToPush.PackageFileFullName + " to " + packageToPush.FeedUrl + "..");
       NuGetPush(packageToPush.PackageFileFullName, new NuGetPushSettings { Source = packageToPush.FeedUrl });
     } else {
