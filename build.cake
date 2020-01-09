@@ -378,13 +378,15 @@ Task("PushNuGetPackage")
     if (finderErrorsAndInfos.Errors.Any()) {
       throw new Exception(finderErrorsAndInfos.ErrorsToString());
     }
+    var headTipSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
     if (packageToPush != null && !string.IsNullOrEmpty(packageToPush.PackageFileFullName) && !string.IsNullOrEmpty(packageToPush.FeedUrl) && !string.IsNullOrEmpty(packageToPush.ApiKey)) {
       Information("Pushing " + packageToPush.PackageFileFullName + " to " + packageToPush.FeedUrl + "..");
       NuGetPush(packageToPush.PackageFileFullName, new NuGetPushSettings { Source = packageToPush.FeedUrl });
+    } else {
+      Information("Did not find any package to push, adding " + headTipSha + " to pushed headTipShas for " + mainNugetFeedId);
     }
     var pushedHeadTipShaRepository = container.Resolve<IPushedHeadTipShaRepository>();
     var pushedErrorsAndInfos = new ErrorsAndInfos();
-    var headTipSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
     if (packageToPush != null && !string.IsNullOrEmpty(packageToPush.Id) && !string.IsNullOrEmpty(packageToPush.Version)) {
       pushedHeadTipShaRepository.Add(mainNugetFeedId, headTipSha, packageToPush.Id, packageToPush.Version, pushedErrorsAndInfos);
     } else {
