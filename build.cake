@@ -329,6 +329,9 @@ Task("CopyReleaseArtifacts")
       throw new Exception(updaterErrorsAndInfos.ErrorsToString());
     }
     updaterErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
+    var headTipIdSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
+    var binFolder = new Folder(masterReleaseBinFolder.Replace('/', '\\')).ParentFolder();
+    System.IO.File.WriteAllText(binFolder.FullName + '\\' + "Release.HeadTipSha.txt", headTipIdSha);
   });
 
 Task("CreateNuGetPackage")
