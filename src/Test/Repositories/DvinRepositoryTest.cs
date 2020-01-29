@@ -27,10 +27,10 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Repositories {
             Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
             Assert.IsTrue(apps.Any());
             foreach (var app in apps.Where(a => !a.Id.Contains("Grasp"))) {
-                Assert.IsTrue(Directory.Exists(app.SolutionFolder));
-                Assert.IsTrue(Directory.Exists(app.ReleaseFolder));
-                Assert.IsTrue(Directory.Exists(app.PublishFolder));
-                Assert.IsTrue(Directory.Exists(app.ExceptionLogFolder));
+                Assert.IsTrue(Directory.Exists(app.SolutionFolder), $"Folder does not exist: {app.SolutionFolder}");
+                Assert.IsTrue(Directory.Exists(app.ReleaseFolder), $"Folder does not exist: {app.ReleaseFolder}");
+                Assert.IsTrue(Directory.Exists(app.PublishFolder), $"Folder does not exist: {app.PublishFolder}");
+                Assert.IsTrue(Directory.Exists(app.ExceptionLogFolder), $"Folder does not exist: {app.ExceptionLogFolder}");
             }
         }
 
