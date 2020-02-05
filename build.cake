@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git&version=0.20.0
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.194.1366
+#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.196.587
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -394,6 +394,7 @@ Task("PushNuGetPackage")
     }
     var headTipSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
     if (packageToPush != null && !string.IsNullOrEmpty(packageToPush.PackageFileFullName) && !string.IsNullOrEmpty(packageToPush.FeedUrl)) {
+      finderErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
       Information("Pushing " + packageToPush.PackageFileFullName + " to " + packageToPush.FeedUrl + "..");
       NuGetPush(packageToPush.PackageFileFullName, new NuGetPushSettings { Source = packageToPush.FeedUrl });
     } else {
