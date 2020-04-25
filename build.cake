@@ -1,7 +1,7 @@
 #load "solution.cake"
 #addin nuget:?package=Cake.Git&version=0.20.0
 #addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.224.1030
+#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.276.612
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -284,10 +284,10 @@ Task("CopyDebugArtifacts")
         System.IO.File.ReadAllText(releaseBinHeadTipIdShaFile), new Folder(masterDebugBinFolder.Replace('/', '\\')),
         false, createAndPushPackages, mainNugetFeedId, updaterErrorsAndInfos);
     }
+    updaterErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
     if (updaterErrorsAndInfos.Errors.Any()) {
       throw new Exception(updaterErrorsAndInfos.ErrorsToString());
     }
-    updaterErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
   });
 
 Task("ReleaseBuild")
@@ -340,10 +340,10 @@ Task("CopyReleaseArtifacts")
         System.IO.File.ReadAllText(releaseBinHeadTipIdShaFile), new Folder(masterReleaseBinFolder.Replace('/', '\\')),
         true, createAndPushPackages, mainNugetFeedId, updaterErrorsAndInfos);
     }
+    updaterErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
     if (updaterErrorsAndInfos.Errors.Any()) {
       throw new Exception(updaterErrorsAndInfos.ErrorsToString());
     }
-    updaterErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
     System.IO.File.WriteAllText(releaseBinHeadTipIdShaFile, headTipIdSha);
   });
 
