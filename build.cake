@@ -1,8 +1,8 @@
 #load "solution.cake"
-#addin nuget:?package=Cake.Git&version=0.20.0
-#addin nuget:?package=System.Runtime.Loader&version=4.0.0.0
-#addin nuget:?package=Microsoft.Bcl.AsyncInterfaces&version=1.0.0.0
-#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.611.1015
+#addin nuget:?package=Cake.Git
+#addin nuget:?package=System.Runtime.Loader
+#addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
+#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.637.629
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,14 +15,17 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Gitty;
 using Aspenlaub.Net.GitHub.CSharp.Gitty.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Gitty.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Gitty.Components;
 using Aspenlaub.Net.GitHub.CSharp.Protch;
 using Aspenlaub.Net.GitHub.CSharp.Protch.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Protch.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Nuclide;
 using Aspenlaub.Net.GitHub.CSharp.Nuclide.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Nuclide.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide.Components;
 using Aspenlaub.Net.GitHub.CSharp.Fusion;
 using Aspenlaub.Net.GitHub.CSharp.Fusion.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Fusion.Components;
 using FolderUpdateMethod = Aspenlaub.Net.GitHub.CSharp.Fusion.Interfaces.FolderUpdateMethod;
 
 masterDebugBinFolder = MakeAbsolute(Directory(masterDebugBinFolder)).FullPath;
@@ -76,7 +79,7 @@ Setup(ctx => {
 });
 
 Task("UpdateBuildCake")
-  .Description("Update build.cake")
+  .Description("Update cake")
   .Does(() => {
     var oldContents = System.IO.File.ReadAllText(buildCakeFileName);
     if (!System.IO.Directory.Exists(tempFolder)) {
@@ -89,7 +92,7 @@ Task("UpdateBuildCake")
       webClient.DownloadFile(latestBuildCakeUrl, tempCakeBuildFileName);
     }
     if (Regex.Replace(oldContents, @"\s", "") != Regex.Replace(System.IO.File.ReadAllText(tempCakeBuildFileName), @"\s", "")) {
-      Information("Updating build.cake");
+      Information("Updating cake");
       System.IO.File.Delete(buildCakeFileName);
       System.IO.File.Move(tempCakeBuildFileName, buildCakeFileName); 
       var autoErrorsAndInfos = new ErrorsAndInfos();
@@ -97,9 +100,9 @@ Task("UpdateBuildCake")
       if (autoErrorsAndInfos.Errors.Any()) {
         throw new Exception(autoErrorsAndInfos.ErrorsToString());
       }
-      throw new Exception("Your build.cake file has been updated. Please retry running it.");
+      throw new Exception("Your cake file has been updated. Please retry running it.");
     } else {
-      Information("The build.cake is up-to-date");
+      Information("The cake is up-to-date");
       System.IO.File.Delete(tempCakeBuildFileName);
       var autoErrorsAndInfos = new ErrorsAndInfos();
       container.Resolve<IAutoCommitterAndPusher>().AutoCommitAndPushSingleCakeFileIfNecessaryAsync(mainNugetFeedId, new Folder(repositoryFolder), autoErrorsAndInfos).Wait();
@@ -436,23 +439,23 @@ Task("BuildAndTestDebugAndRelease")
   });
 
 Task("IgnoreOutdatedBuildCakePendingChangesAndDoCreateOrPushPackage")
-  .Description("Default except check for outdated build.cake, except check for pending changes and except nuget create and push")
+  .Description("Default except check for outdated cake, except check for pending changes and except nuget create and push")
   .IsDependentOn("CleanRestorePull").IsDependentOn("BuildAndTestDebugAndRelease")
   .IsDependentOn("UpdateNuspec").Does(() => {
   });
 
 Task("IgnoreOutdatedBuildCakePendingChangesAndDoNotPush")
-  .Description("Default except check for outdated build.cake, except check for pending changes and except nuget push")
+  .Description("Default except check for outdated cake, except check for pending changes and except nuget push")
   .IsDependentOn("IgnoreOutdatedBuildCakePendingChangesAndDoCreateOrPushPackage").IsDependentOn("CreateNuGetPackage").Does(() => {
   });
 
 Task("IgnoreOutdatedBuildCakePendingChanges")
-  .Description("Default except check for outdated build.cake and except check for pending changes")
+  .Description("Default except check for outdated cake and except check for pending changes")
   .IsDependentOn("IgnoreOutdatedBuildCakePendingChangesAndDoNotPush").IsDependentOn("PushNuGetPackage").IsDependentOn("CleanObjectFolders").Does(() => {
   });
 
 Task("IgnoreOutdatedBuildCakeAndDoNotPush")
-  .Description("Default except check for outdated build.cake and except nuget push")
+  .Description("Default except check for outdated cake and except nuget push")
   .IsDependentOn("CleanRestorePull").IsDependentOn("VerifyThatThereAreNoUncommittedChanges").IsDependentOn("VerifyThatDevelopmentBranchIsAheadOfMaster")
   .IsDependentOn("VerifyThatMasterBranchDoesNotHaveOpenPullRequests").IsDependentOn("VerifyThatDevelopmentBranchDoesNotHaveOpenPullRequests").IsDependentOn("VerifyThatPullRequestExistsForDevelopmentBranchHeadTip")
   .IsDependentOn("BuildAndTestDebugAndRelease").IsDependentOn("UpdateNuspec").IsDependentOn("CreateNuGetPackage")
