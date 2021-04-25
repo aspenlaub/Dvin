@@ -23,10 +23,10 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
             var process = CreateProcess(executableFullName, arguments, workingFolder);
             var outputWaitHandle = new AutoResetEvent(false);
             var errorWaitHandle = new AutoResetEvent(false);
-            process.OutputDataReceived += (sender, e) => {
+            process.OutputDataReceived += (_, e) => {
                 OnDataReceived(e, outputWaitHandle, errorsAndInfos.Infos);
             };
-            process.ErrorDataReceived += (sender, e) => {
+            process.ErrorDataReceived += (_, e) => {
                 OnDataReceived(e, errorWaitHandle, errorsAndInfos.Errors);
             };
             process.Start();
@@ -55,7 +55,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
         }
 
         private static Process CreateProcess(string executableFullName, string arguments, string workingFolder) {
-            return new Process {
+            return new() {
                 StartInfo = {
                     WindowStyle = ProcessWindowStyle.Hidden,
                     CreateNoWindow = true,

@@ -25,14 +25,16 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories {
             var secretDvinApps = await SecretRepository.GetAsync(dvinAppsSecret, errorsAndInfos);
             if (!resolve || errorsAndInfos.AnyErrors()) { return secretDvinApps; }
 
-            secretDvinApps.ResolveFolders(FolderResolver, errorsAndInfos);
+            await secretDvinApps.ResolveFoldersAsync(FolderResolver, errorsAndInfos);
             return secretDvinApps;
         }
 
         public async Task<DvinApp> LoadAsync(string id, IErrorsAndInfos errorsAndInfos) {
             var dvinApps = await LoadAsync(false, errorsAndInfos);
             var dvinApp = dvinApps.FirstOrDefault(d => d.Id == id);
-            dvinApp?.ResolveFolders(FolderResolver, errorsAndInfos);
+            if (dvinApp != null) {
+                await dvinApp.ResolveFoldersAsync(FolderResolver, errorsAndInfos);
+            }
             return dvinApp;
         }
     }

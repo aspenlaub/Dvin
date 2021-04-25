@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
@@ -12,8 +13,10 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
             return clone;
         }
 
-        public void ResolveFolders(IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos) {
-            ForEach(dvinApp => dvinApp.ResolveFolders(folderResolver, errorsAndInfos));
+        public async Task ResolveFoldersAsync(IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos) {
+            foreach (var dvinApp in this) {
+                await dvinApp.ResolveFoldersAsync(folderResolver, errorsAndInfos);
+            }
         }
     }
 }

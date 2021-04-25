@@ -135,7 +135,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
                 ReleaseFolder = releaseFolder,
                 PublishFolder = publishFolder
             };
-            fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns<IFolder, string, SearchOption>((f, p, s) => {
+            fileSystemServiceMock.Setup(f => f.ListFilesInDirectory(It.IsAny<IFolder>(), It.IsAny<string>(), It.IsAny<SearchOption>())).Returns<IFolder, string, SearchOption>((f, _, _) => {
                 return new List<string> { f.FullName + @"\something.json" };
             });
             var now = DateTime.Now;

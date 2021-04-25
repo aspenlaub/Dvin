@@ -4,6 +4,7 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Autofac;
 using Microsoft.Extensions.DependencyInjection;
+// ReSharper disable UnusedMember.Global
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
     public static class DvinContainerBuilder {

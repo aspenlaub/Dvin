@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -65,7 +66,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
                 return;
             }
 
-            var expectedPublishUrlElement = "$(MSBuildThisFileDirectory)" + string.Join("", pubXmlFile.Substring(pos + 1).ToCharArray().Where(c => c == '\\').Select(c => @"..\")) + publishFolder.FullName.Substring(pos + 1);
+            var expectedPublishUrlElement = "$(MSBuildThisFileDirectory)" + string.Join("", pubXmlFile.Substring(pos + 1).ToCharArray().Where(c => c == '\\').Select(_ => @"..\")) + publishFolder.FullName.Substring(pos + 1);
 
             if (publishUrlElementValue == expectedPublishUrlElement) {
                 return;
@@ -77,11 +78,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
         public static bool IsPortListenedTo(this IDvinApp dvinApp) {
             var processStarter = new ProcessStarter();
             var errorsAndInfos = new ErrorsAndInfos();
-            using (var process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos)) {
-                if (process != null) {
-                    processStarter.WaitForExit(process);
-                }
+            using var process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos);
+            if (process != null) {
+                processStarter.WaitForExit(process);
             }
+
             return errorsAndInfos.Infos.Any(i => i.Contains("TCP") && (i.Contains("LISTENING") || i.Contains("ABHÖREN") || i.Contains("ABH™REN")) && i.Contains($":{dvinApp.Port} "));
         }
 
@@ -224,12 +225,12 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions {
             return publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
         }
 
-        public static void ResolveFolders(this IDvinApp dvinApp, IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos) {
+        public static async Task ResolveFoldersAsync(this IDvinApp dvinApp, IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos) {
             dvinApp.AreFoldersBeingResolved = true;
-            dvinApp.SolutionFolder = folderResolver.Resolve(dvinApp.SolutionFolder, errorsAndInfos).FullName;
-            dvinApp.ReleaseFolder = folderResolver.Resolve(dvinApp.ReleaseFolder, errorsAndInfos).FullName;
-            dvinApp.PublishFolder = folderResolver.Resolve(dvinApp.PublishFolder, errorsAndInfos).FullName;
-            dvinApp.ExceptionLogFolder = folderResolver.Resolve(dvinApp.ExceptionLogFolder, errorsAndInfos).FullName;
+            dvinApp.SolutionFolder = (await folderResolver.ResolveAsync(dvinApp.SolutionFolder, errorsAndInfos)).FullName;
+            dvinApp.ReleaseFolder = (await folderResolver.ResolveAsync(dvinApp.ReleaseFolder, errorsAndInfos)).FullName;
+            dvinApp.PublishFolder = (await folderResolver.ResolveAsync(dvinApp.PublishFolder, errorsAndInfos)).FullName;
+            dvinApp.ExceptionLogFolder = (await folderResolver.ResolveAsync(dvinApp.ExceptionLogFolder, errorsAndInfos)).FullName;
             dvinApp.AreFoldersBeingResolved = false;
         }
     }

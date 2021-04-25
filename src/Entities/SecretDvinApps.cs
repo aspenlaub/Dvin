@@ -3,8 +3,8 @@
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
     public class SecretDvinApps : ISecret<DvinApps> {
         private DvinApps vDefaultValue;
-        public DvinApps DefaultValue => vDefaultValue ?? (vDefaultValue = new DvinApps {
-            new DvinApp {
+        public DvinApps DefaultValue => vDefaultValue ??= new DvinApps {
+            new() {
                 Id = "GraspNetCore",
                 Description = "This is a nonsense entry with the sole purpose of providing a valid DvinApps secret",
                 Port = 50114,
@@ -14,7 +14,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
                 PublishFolder = @"D:\Users\Alice\GraspNetCoreBin\Publish",
                 ExceptionLogFolder = @"D:\Temp\Exceptions"
             }
-        });
+        };
 
         public string Guid => "4C40BA08-3ED6-4019-BD2C-33390E0EEF74";
     }
