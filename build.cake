@@ -276,7 +276,7 @@ Task("RunTestsOnDebugArtifacts")
 Task("CopyDebugArtifacts")
   .WithCriteria(() => currentGitBranch == "master")
   .Description("Copy Debug artifacts to master Debug binaries folder")
-  .Does(() => {
+  .Does(async () => {
     var updater = container.Resolve<IFolderUpdater>();
     var updaterErrorsAndInfos = new ErrorsAndInfos();
     var headTipIdSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
@@ -284,7 +284,7 @@ Task("CopyDebugArtifacts")
       updater.UpdateFolder(new Folder(debugBinFolder.Replace('/', '\\')), new Folder(masterDebugBinFolder.Replace('/', '\\')), 
         FolderUpdateMethod.AssembliesButNotIfOnlySlightlyChanged, "Aspenlaub.Net.GitHub.CSharp." + solutionId, updaterErrorsAndInfos);
     } else {
-      updater.UpdateFolder(solutionId, headTipIdSha, new Folder(debugBinFolder.Replace('/', '\\')),
+      await updater.UpdateFolderAsync(solutionId, headTipIdSha, new Folder(debugBinFolder.Replace('/', '\\')),
         System.IO.File.ReadAllText(releaseBinHeadTipIdShaFile), new Folder(masterDebugBinFolder.Replace('/', '\\')),
         false, createAndPushPackages, mainNugetFeedId, updaterErrorsAndInfos);
     }
@@ -332,7 +332,7 @@ Task("RunTestsOnReleaseArtifacts")
 Task("CopyReleaseArtifacts")
   .WithCriteria(() => currentGitBranch == "master")
   .Description("Copy Release artifacts to master Release binaries folder")
-  .Does(() => {
+  .Does(async () => {
     var updater = container.Resolve<IFolderUpdater>();
     var updaterErrorsAndInfos = new ErrorsAndInfos();
     var headTipIdSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
@@ -340,7 +340,7 @@ Task("CopyReleaseArtifacts")
       updater.UpdateFolder(new Folder(releaseBinFolder.Replace('/', '\\')), new Folder(masterReleaseBinFolder.Replace('/', '\\')), 
         FolderUpdateMethod.AssembliesButNotIfOnlySlightlyChanged, "Aspenlaub.Net.GitHub.CSharp." + solutionId, updaterErrorsAndInfos);
     } else {
-      updater.UpdateFolder(solutionId, headTipIdSha, new Folder(releaseBinFolder.Replace('/', '\\')),
+      await updater.UpdateFolderAsync(solutionId, headTipIdSha, new Folder(releaseBinFolder.Replace('/', '\\')),
         System.IO.File.ReadAllText(releaseBinHeadTipIdShaFile), new Folder(masterReleaseBinFolder.Replace('/', '\\')),
         true, createAndPushPackages, mainNugetFeedId, updaterErrorsAndInfos);
     }
@@ -409,9 +409,9 @@ Task("PushNuGetPackage")
     var pushedHeadTipShaRepository = container.Resolve<IPushedHeadTipShaRepository>();
     var pushedErrorsAndInfos = new ErrorsAndInfos();
     if (packageToPush != null && !string.IsNullOrEmpty(packageToPush.Id) && !string.IsNullOrEmpty(packageToPush.Version)) {
-      pushedHeadTipShaRepository.Add(mainNugetFeedId, headTipSha, packageToPush.Id, packageToPush.Version, pushedErrorsAndInfos);
+      await pushedHeadTipShaRepository.AddAsync(mainNugetFeedId, headTipSha, packageToPush.Id, packageToPush.Version, pushedErrorsAndInfos);
     } else {
-      pushedHeadTipShaRepository.Add(mainNugetFeedId, headTipSha, pushedErrorsAndInfos);
+      await pushedHeadTipShaRepository.AddAsync(mainNugetFeedId, headTipSha, pushedErrorsAndInfos);
     }
     if (pushedErrorsAndInfos.Errors.Any()) {
       throw new Exception(pushedErrorsAndInfos.ErrorsToString());
