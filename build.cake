@@ -2,7 +2,7 @@
 #addin nuget:?package=Cake.Git
 #addin nuget:?package=System.Runtime.Loader
 #addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
-#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.642.960
+#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.644.561
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -259,7 +259,7 @@ Task("RunTestsOnDebugArtifacts")
             throw new Exception(projectErrorsAndInfos.ErrorsToString());
         }
         if (projectLogic.TargetsOldFramework(project)) {
-            throw new Exception(".Net frameworks 4.6 and 4.5 are no longer supported");
+            throw new Exception("Project targets a .net framework that is no longer supported");
         }
         Information("Running tests in " + projectFile.FullPath);
         var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
@@ -315,7 +315,7 @@ Task("RunTestsOnReleaseArtifacts")
             throw new Exception(projectErrorsAndInfos.ErrorsToString());
         }
         if (projectLogic.TargetsOldFramework(project)) {
-            throw new Exception(".Net frameworks 4.6 and 4.5 are no longer supported");
+            throw new Exception("Project targets a .net framework that is no longer supported");
         }
         Information("Running tests in " + projectFile.FullPath);
         var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
@@ -358,7 +358,7 @@ Task("CreateNuGetPackage")
     var projectErrorsAndInfos = new ErrorsAndInfos();
     var solutionFileFullName = (MakeAbsolute(DirectoryPath.FromString("./src")).FullPath + '\\' + solutionId + ".sln").Replace('/', '\\');
     var project = projectFactory.Load(solutionFileFullName, solutionFileFullName.Replace(".sln", ".csproj"), projectErrorsAndInfos);
-    if (!projectLogic.DoAllNetStandardOrCoreConfigurationsHaveNuspecs(project)) {
+    if (!projectLogic.DoAllConfigurationsHaveNuspecs(project)) {
         throw new Exception("The release configuration needs a NuspecFile entry" + "\r\n" + solutionFileFullName + "\r\n" + solutionFileFullName.Replace(".sln", ".csproj"));
     }
     if (projectErrorsAndInfos.Errors.Any()) {
@@ -366,25 +366,13 @@ Task("CreateNuGetPackage")
     }
     var folder = new Folder(masterReleaseBinFolder);
     if (!FolderExtensions.LastWrittenFileFullName(folder).EndsWith("nupkg")) {
-      if (projectLogic.IsANetStandardOrCoreProject(project)) {
-          var settings = new DotNetCorePackSettings {
-              Configuration = "Release",
-              NoBuild = true, NoRestore = true,
-              IncludeSymbols = false,
-              OutputDirectory = masterReleaseBinFolder,
-          };
-
-          DotNetCorePack("./src/" + solutionId + ".csproj", settings);
-      } else {
-          var nuGetPackSettings = new NuGetPackSettings {
-            BasePath = "./src/", 
-            OutputDirectory = masterReleaseBinFolder, 
-            IncludeReferencedProjects = true,
-            Properties = new Dictionary<string, string> { { "Configuration", "Release" } }
-          };
-
-          NuGetPack("./src/" + solutionId + ".csproj", nuGetPackSettings);
-      }
+      var settings = new DotNetCorePackSettings {
+          Configuration = "Release",
+          NoBuild = true, NoRestore = true,
+          IncludeSymbols = false,
+          OutputDirectory = masterReleaseBinFolder,
+      };
+      DotNetCorePack("./src/" + solutionId + ".csproj", settings);
     }
   });
 
