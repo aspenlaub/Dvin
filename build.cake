@@ -2,7 +2,7 @@
 #addin nuget:?package=Cake.Git
 #addin nuget:?package=System.Runtime.Loader
 #addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
-#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.663.718
+#addin nuget:?package=Fusion&loaddependencies=true&version=2.0.644.561
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
