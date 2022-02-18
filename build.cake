@@ -263,11 +263,11 @@ Task("RunTestsOnDebugArtifacts")
         }
         Information("Running tests in " + projectFile.FullPath);
         var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
-        var dotNetCoreTestSettings = new DotNetCoreTestSettings {
+        var dotNetTestSettings = new DotNetTestSettings {
           Configuration = "Debug", NoRestore = true, NoBuild = true,
           ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + logFileName + "\"")
         };
-        DotNetCoreTest(projectFile.FullPath, dotNetCoreTestSettings);
+        DotNetTest(projectFile.FullPath, dotNetTestSettings);
     }
     CleanDirectory(testResultsFolder); 
     DeleteDirectory(testResultsFolder, new DeleteDirectorySettings { Recursive = false, Force = false });
@@ -319,11 +319,11 @@ Task("RunTestsOnReleaseArtifacts")
         }
         Information("Running tests in " + projectFile.FullPath);
         var logFileName = testResultsFolder + @"/TestResults-"  + project.ProjectName + ".trx";
-        var dotNetCoreTestSettings = new DotNetCoreTestSettings { 
+        var dotNetTestSettings = new DotNetTestSettings { 
           Configuration = "Release", NoRestore = true, NoBuild = true,
           ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + logFileName + "\"")
         };
-        DotNetCoreTest(projectFile.FullPath, dotNetCoreTestSettings);
+        DotNetTest(projectFile.FullPath, dotNetTestSettings);
     }
     CleanDirectory(testResultsFolder); 
     DeleteDirectory(testResultsFolder, new DeleteDirectorySettings { Recursive = false, Force = false });
