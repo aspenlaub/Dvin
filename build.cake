@@ -369,13 +369,13 @@ Task("CreateNuGetPackage")
     }
     var folder = new Folder(masterReleaseBinFolder);
     if (!FolderExtensions.LastWrittenFileFullName(folder).EndsWith("nupkg")) {
-      var settings = new DotNetCorePackSettings {
+      var settings = new DotNetPackSettings {
           Configuration = "Release",
           NoBuild = true, NoRestore = true,
           IncludeSymbols = false,
           OutputDirectory = masterReleaseBinFolder,
       };
-      DotNetCorePack("./src/" + solutionId + ".csproj", settings);
+      DotNetPack("./src/" + solutionId + ".csproj", settings);
     }
   });
 
