@@ -16,7 +16,7 @@ public class DvinRepositoryTest {
     private readonly IContainer Container;
 
     public DvinRepositoryTest() {
-        var builder = new ContainerBuilder().UseDvinAndPegh(new DummyCsArgumentPrompter());
+        var builder = new ContainerBuilder().UseDvinAndPegh("Dvin", new DummyCsArgumentPrompter());
         Container = builder.Build();
     }
 

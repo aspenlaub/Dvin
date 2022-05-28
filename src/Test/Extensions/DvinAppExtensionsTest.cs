@@ -26,7 +26,7 @@ public class DvinAppExtensionsTest {
     private readonly IContainer Container;
 
     public DvinAppExtensionsTest() {
-        var builder = new ContainerBuilder().UseDvinAndPegh(new DummyCsArgumentPrompter());
+        var builder = new ContainerBuilder().UseDvinAndPegh("Dvin", new DummyCsArgumentPrompter());
         Container = builder.Build();
     }
 

@@ -15,7 +15,7 @@ public class SecretDvinAppsTest {
     private readonly IContainer Container;
 
     public SecretDvinAppsTest() {
-        var builder = new ContainerBuilder().UsePegh(new DummyCsArgumentPrompter());
+        var builder = new ContainerBuilder().UsePegh("Dvin", new DummyCsArgumentPrompter());
         Container = builder.Build();
     }
 
