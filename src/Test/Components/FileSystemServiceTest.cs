@@ -13,6 +13,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Components {
             var folder = new Folder(location);
             var sut = new FileSystemService();
             var files = sut.ListFilesInDirectory(folder, "*.*", SearchOption.AllDirectories);
+            Assert.IsTrue(files.Contains(location + @"\Autofac.dll"));
         }
     }
 }

@@ -6,8 +6,8 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
     public class ProcessStarter {
-        private readonly IDictionary<Process, AutoResetEvent> vOutputWaitHandles = new Dictionary<Process, AutoResetEvent>();
-        private readonly IDictionary<Process, AutoResetEvent> vErrorWaitHandles = new Dictionary<Process, AutoResetEvent>();
+        private readonly IDictionary<Process, AutoResetEvent> OutputWaitHandles = new Dictionary<Process, AutoResetEvent>();
+        private readonly IDictionary<Process, AutoResetEvent> ErrorWaitHandles = new Dictionary<Process, AutoResetEvent>();
 
         public Process StartProcess(string executableFullName, string arguments, string workingFolder, IErrorsAndInfos errorsAndInfos) {
             if (executableFullName.Contains(@"\") && !File.Exists(executableFullName)) {
@@ -32,14 +32,14 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components {
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            vOutputWaitHandles[process] = outputWaitHandle;
-            vErrorWaitHandles[process] = errorWaitHandle;
+            OutputWaitHandles[process] = outputWaitHandle;
+            ErrorWaitHandles[process] = errorWaitHandle;
             return process;
         }
 
         public void WaitForExit(Process process) {
-            var outputWaitHandle = vOutputWaitHandles[process];
-            var errorWaitHandle = vErrorWaitHandles[process];
+            var outputWaitHandle = OutputWaitHandles[process];
+            var errorWaitHandle = ErrorWaitHandles[process];
             process.WaitForExit();
             outputWaitHandle.WaitOne();
             errorWaitHandle.WaitOne();

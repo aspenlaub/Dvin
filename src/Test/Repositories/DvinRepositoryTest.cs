@@ -12,16 +12,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Repositories {
     [TestClass]
     public class DvinRepositoryTest {
-        private readonly IContainer vContainer;
+        private readonly IContainer Container;
 
         public DvinRepositoryTest() {
             var builder = new ContainerBuilder().UseDvinAndPegh(new DummyCsArgumentPrompter());
-            vContainer = builder.Build();
+            Container = builder.Build();
         }
 
         [TestMethod]
         public async Task CanGetDvinApps() {
-            var sut = vContainer.Resolve<IDvinRepository>();
+            var sut = Container.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
             var apps = await sut.LoadAsync(errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
@@ -36,7 +36,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Repositories {
 
         [TestMethod]
         public async Task CanGetDvinApp() {
-            var sut = vContainer.Resolve<IDvinRepository>();
+            var sut = Container.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
             var apps = await sut.LoadAsync(errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());

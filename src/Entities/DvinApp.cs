@@ -20,32 +20,32 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
         [XmlIgnore]
         public bool AreFoldersBeingResolved { get; set; }
 
-        private string vSolutionFolder;
+        private string PrivateSolutionFolder;
         [XmlElement("solutionfolder")]
         public string SolutionFolder {
-            get => ReturnFolderThrowExceptionIfUnresolved(vSolutionFolder);
-            set => vSolutionFolder = value;
+            get => ReturnFolderThrowExceptionIfUnresolved(PrivateSolutionFolder);
+            set => PrivateSolutionFolder = value;
         }
 
-        private string vReleaseFolder;
+        private string PrivateReleaseFolder;
         [XmlElement("releasefolder")]
         public string ReleaseFolder {
-            get => ReturnFolderThrowExceptionIfUnresolved(vReleaseFolder);
-            set => vReleaseFolder = value;
+            get => ReturnFolderThrowExceptionIfUnresolved(PrivateReleaseFolder);
+            set => PrivateReleaseFolder = value;
         }
 
-        private string vPublishFolder;
+        private string PrivatePublishFolder;
         [XmlElement("publishfolder")]
         public string PublishFolder {
-            get => ReturnFolderThrowExceptionIfUnresolved(vPublishFolder);
-            set => vPublishFolder = value;
+            get => ReturnFolderThrowExceptionIfUnresolved(PrivatePublishFolder);
+            set => PrivatePublishFolder = value;
         }
 
-        private string vExceptionLogFolder;
+        private string PrivateExceptionLogFolder;
         [XmlElement("exceptionlogfolder")]
         public string ExceptionLogFolder {
-            get => ReturnFolderThrowExceptionIfUnresolved(vExceptionLogFolder);
-            set => vExceptionLogFolder = value;
+            get => ReturnFolderThrowExceptionIfUnresolved(PrivateExceptionLogFolder);
+            set => PrivateExceptionLogFolder = value;
         }
 
         private string ReturnFolderThrowExceptionIfUnresolved(string folder) {

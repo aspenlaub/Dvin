@@ -22,11 +22,11 @@ using Moq;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
     [TestClass]
     public class DvinAppExtensionsTest {
-        private readonly IContainer vContainer;
+        private readonly IContainer Container;
 
         public DvinAppExtensionsTest() {
             var builder = new ContainerBuilder().UseDvinAndPegh(new DummyCsArgumentPrompter());
-            vContainer = builder.Build();
+            Container = builder.Build();
         }
 
         [TestMethod]
@@ -151,7 +151,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
         [TestMethod]
         public async Task CanPublishApps() {
-            var repository = vContainer.Resolve<IDvinRepository>();
+            var repository = Container.Resolve<IDvinRepository>();
             var fileSystemService = new FileSystemService();
             var errorsAndInfos = new ErrorsAndInfos();
             var apps = await repository.LoadAsync(errorsAndInfos);
@@ -170,7 +170,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
         [TestMethod]
         public async Task CanStartSampleApp() {
-            var repository = vContainer.Resolve<IDvinRepository>();
+            var repository = Container.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
             var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
@@ -224,7 +224,7 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions {
 
         [TestMethod]
         public async Task SampleAppCanPublishItselfWhileRunning() {
-            var repository = vContainer.Resolve<IDvinRepository>();
+            var repository = Container.Resolve<IDvinRepository>();
             var errorsAndInfos = new ErrorsAndInfos();
             var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
             Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());

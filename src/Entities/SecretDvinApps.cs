@@ -2,8 +2,8 @@
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities {
     public class SecretDvinApps : ISecret<DvinApps> {
-        private DvinApps vDefaultValue;
-        public DvinApps DefaultValue => vDefaultValue ??= new DvinApps {
+        private DvinApps DefaultDvinApps;
+        public DvinApps DefaultValue => DefaultDvinApps ??= new DvinApps {
             new() {
                 Id = "GraspNetCore",
                 Description = "This is a nonsense entry with the sole purpose of providing a valid DvinApps secret",

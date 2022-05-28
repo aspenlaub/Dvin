@@ -11,16 +11,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities {
     [TestClass]
     public class SecretDvinAppsTest {
-        private readonly IContainer vContainer;
+        private readonly IContainer Container;
 
         public SecretDvinAppsTest() {
             var builder = new ContainerBuilder().UsePegh(new DummyCsArgumentPrompter());
-            vContainer = builder.Build();
+            Container = builder.Build();
         }
 
         [TestMethod]
         public async Task CanGetSecretDvinApps() {
-            var repository = vContainer.Resolve<ISecretRepository>();
+            var repository = Container.Resolve<ISecretRepository>();
             var dvinAppsSecret = new SecretDvinApps();
             var errorsAndInfos = new ErrorsAndInfos();
             var dvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
