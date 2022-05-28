@@ -8,24 +8,24 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities {
-    [TestClass]
-    public class SecretDvinAppsTest {
-        private readonly IContainer Container;
+namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities;
 
-        public SecretDvinAppsTest() {
-            var builder = new ContainerBuilder().UsePegh(new DummyCsArgumentPrompter());
-            Container = builder.Build();
-        }
+[TestClass]
+public class SecretDvinAppsTest {
+    private readonly IContainer Container;
 
-        [TestMethod]
-        public async Task CanGetSecretDvinApps() {
-            var repository = Container.Resolve<ISecretRepository>();
-            var dvinAppsSecret = new SecretDvinApps();
-            var errorsAndInfos = new ErrorsAndInfos();
-            var dvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
-            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-            Assert.IsTrue(dvinApps.Any(c => c.Id == "GraspNetCore"));
-        }
+    public SecretDvinAppsTest() {
+        var builder = new ContainerBuilder().UsePegh(new DummyCsArgumentPrompter());
+        Container = builder.Build();
+    }
+
+    [TestMethod]
+    public async Task CanGetSecretDvinApps() {
+        var repository = Container.Resolve<ISecretRepository>();
+        var dvinAppsSecret = new SecretDvinApps();
+        var errorsAndInfos = new ErrorsAndInfos();
+        var dvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
+        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.IsTrue(dvinApps.Any(c => c.Id == "GraspNetCore"));
     }
 }
