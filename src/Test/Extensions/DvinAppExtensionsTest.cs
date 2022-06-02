@@ -23,11 +23,11 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Extensions;
 
 [TestClass]
 public class DvinAppExtensionsTest {
-    private readonly IContainer Container;
+    private readonly IContainer _Container;
 
     public DvinAppExtensionsTest() {
         var builder = new ContainerBuilder().UseDvinAndPegh("Dvin", new DummyCsArgumentPrompter());
-        Container = builder.Build();
+        _Container = builder.Build();
     }
 
     [TestMethod]
@@ -152,7 +152,7 @@ public class DvinAppExtensionsTest {
 
     [TestMethod]
     public async Task CanPublishApps() {
-        var repository = Container.Resolve<IDvinRepository>();
+        var repository = _Container.Resolve<IDvinRepository>();
         var fileSystemService = new FileSystemService();
         var errorsAndInfos = new ErrorsAndInfos();
         var apps = await repository.LoadAsync(errorsAndInfos);
@@ -171,7 +171,7 @@ public class DvinAppExtensionsTest {
 
     [TestMethod]
     public async Task CanStartSampleApp() {
-        var repository = Container.Resolve<IDvinRepository>();
+        var repository = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
         var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
@@ -225,7 +225,7 @@ public class DvinAppExtensionsTest {
 
     [TestMethod]
     public async Task SampleAppCanPublishItselfWhileRunning() {
-        var repository = Container.Resolve<IDvinRepository>();
+        var repository = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
         var dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());

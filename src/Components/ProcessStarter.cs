@@ -7,8 +7,8 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 
 public class ProcessStarter {
-    private readonly IDictionary<Process, AutoResetEvent> OutputWaitHandles = new Dictionary<Process, AutoResetEvent>();
-    private readonly IDictionary<Process, AutoResetEvent> ErrorWaitHandles = new Dictionary<Process, AutoResetEvent>();
+    private readonly IDictionary<Process, AutoResetEvent> _OutputWaitHandles = new Dictionary<Process, AutoResetEvent>();
+    private readonly IDictionary<Process, AutoResetEvent> _ErrorWaitHandles = new Dictionary<Process, AutoResetEvent>();
 
     public Process StartProcess(string executableFullName, string arguments, string workingFolder, IErrorsAndInfos errorsAndInfos) {
         if (executableFullName.Contains(@"\") && !File.Exists(executableFullName)) {
@@ -33,14 +33,14 @@ public class ProcessStarter {
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-        OutputWaitHandles[process] = outputWaitHandle;
-        ErrorWaitHandles[process] = errorWaitHandle;
+        _OutputWaitHandles[process] = outputWaitHandle;
+        _ErrorWaitHandles[process] = errorWaitHandle;
         return process;
     }
 
     public void WaitForExit(Process process) {
-        var outputWaitHandle = OutputWaitHandles[process];
-        var errorWaitHandle = ErrorWaitHandles[process];
+        var outputWaitHandle = _OutputWaitHandles[process];
+        var errorWaitHandle = _ErrorWaitHandles[process];
         process.WaitForExit();
         outputWaitHandle.WaitOne();
         errorWaitHandle.WaitOne();

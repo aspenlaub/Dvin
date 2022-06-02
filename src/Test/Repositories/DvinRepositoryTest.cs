@@ -13,16 +13,16 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Repositories;
 
 [TestClass]
 public class DvinRepositoryTest {
-    private readonly IContainer Container;
+    private readonly IContainer _Container;
 
     public DvinRepositoryTest() {
         var builder = new ContainerBuilder().UseDvinAndPegh("Dvin", new DummyCsArgumentPrompter());
-        Container = builder.Build();
+        _Container = builder.Build();
     }
 
     [TestMethod]
     public async Task CanGetDvinApps() {
-        var sut = Container.Resolve<IDvinRepository>();
+        var sut = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
         var apps = await sut.LoadAsync(errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
@@ -37,7 +37,7 @@ public class DvinRepositoryTest {
 
     [TestMethod]
     public async Task CanGetDvinApp() {
-        var sut = Container.Resolve<IDvinRepository>();
+        var sut = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
         var apps = await sut.LoadAsync(errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());

@@ -12,16 +12,16 @@ namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Test.Entities;
 
 [TestClass]
 public class SecretDvinAppsTest {
-    private readonly IContainer Container;
+    private readonly IContainer _Container;
 
     public SecretDvinAppsTest() {
         var builder = new ContainerBuilder().UsePegh("Dvin", new DummyCsArgumentPrompter());
-        Container = builder.Build();
+        _Container = builder.Build();
     }
 
     [TestMethod]
     public async Task CanGetSecretDvinApps() {
-        var repository = Container.Resolve<ISecretRepository>();
+        var repository = _Container.Resolve<ISecretRepository>();
         var dvinAppsSecret = new SecretDvinApps();
         var errorsAndInfos = new ErrorsAndInfos();
         var dvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
