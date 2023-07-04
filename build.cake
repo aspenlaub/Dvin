@@ -1,5 +1,5 @@
 #load "solution.cake"
-#addin nuget:?package=Cake.Git
+#addin nuget:?package=Cake.Git&version=2.0.0
 #addin nuget:?package=System.Runtime.Loader
 #addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
 #addin nuget:?package=Fusion50&loaddependencies=true&version=2.0.1040.1202
