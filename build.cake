@@ -2,7 +2,7 @@
 #addin nuget:?package=Cake.Git&version=2.0.0
 #addin nuget:?package=System.Runtime.Loader
 #addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
-#addin nuget:?package=Fusion50&loaddependencies=true&version=2.0.1040.1202
+#addin nuget:?package=Fusion50&loaddependencies=true&version=2.0.1482.888
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,10 +20,10 @@ using Aspenlaub.Net.GitHub.CSharp.Gitty.Components;
 using Aspenlaub.Net.GitHub.CSharp.Protch;
 using Aspenlaub.Net.GitHub.CSharp.Protch.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Protch.Entities;
-using Aspenlaub.Net.GitHub.CSharp.Nuclide;
-using Aspenlaub.Net.GitHub.CSharp.Nuclide.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Nuclide.Entities;
-using Aspenlaub.Net.GitHub.CSharp.Nuclide.Components;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide50;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide50.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide50.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide50.Components;
 using Aspenlaub.Net.GitHub.CSharp.Fusion50;
 using Aspenlaub.Net.GitHub.CSharp.Fusion50.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Fusion50.Components;
@@ -157,7 +157,7 @@ Task("UpdateNuspec")
     var nuSpecFile = solutionFileFullName.Replace(".sln", ".nuspec");
     var nuSpecErrorsAndInfos = new ErrorsAndInfos();
     var headTipIdSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
-    await container.Resolve<INuSpecCreator>().CreateNuSpecFileIfRequiredOrPresentAsync(true, solutionFileFullName, new List<string> { headTipIdSha }, nuSpecErrorsAndInfos);
+    await container.Resolve<INuSpecCreator>().CreateNuSpecFileIfRequiredOrPresentAsync(true, solutionFileFullName, currentGitBranch, new List<string> { headTipIdSha }, nuSpecErrorsAndInfos);
     if (nuSpecErrorsAndInfos.Errors.Any()) {
       throw new Exception(nuSpecErrorsAndInfos.ErrorsToString());
     }
@@ -287,7 +287,7 @@ Task("CopyDebugArtifacts")
       updater.UpdateFolder(new Folder(debugBinFolder.Replace('/', '\\')), new Folder(masterDebugBinFolder.Replace('/', '\\')), 
         FolderUpdateMethod.AssembliesButNotIfOnlySlightlyChanged, "Aspenlaub.Net.GitHub.CSharp." + solutionId, updaterErrorsAndInfos);
     } else {
-      await updater.UpdateFolderAsync(solutionId, headTipIdSha, new Folder(debugBinFolder.Replace('/', '\\')),
+      await updater.UpdateFolderAsync(solutionId, currentGitBranch, headTipIdSha, new Folder(debugBinFolder.Replace('/', '\\')),
         System.IO.File.ReadAllText(releaseBinHeadTipIdShaFile), new Folder(masterDebugBinFolder.Replace('/', '\\')),
         false, createAndPushPackages, mainNugetFeedId, updaterErrorsAndInfos);
     }
@@ -343,7 +343,7 @@ Task("CopyReleaseArtifacts")
       updater.UpdateFolder(new Folder(releaseBinFolder.Replace('/', '\\')), new Folder(masterReleaseBinFolder.Replace('/', '\\')), 
         FolderUpdateMethod.AssembliesButNotIfOnlySlightlyChanged, "Aspenlaub.Net.GitHub.CSharp." + solutionId, updaterErrorsAndInfos);
     } else {
-      await updater.UpdateFolderAsync(solutionId, headTipIdSha, new Folder(releaseBinFolder.Replace('/', '\\')),
+      await updater.UpdateFolderAsync(solutionId, currentGitBranch, headTipIdSha, new Folder(releaseBinFolder.Replace('/', '\\')),
         System.IO.File.ReadAllText(releaseBinHeadTipIdShaFile), new Folder(masterReleaseBinFolder.Replace('/', '\\')),
         true, createAndPushPackages, mainNugetFeedId, updaterErrorsAndInfos);
     }
@@ -385,7 +385,7 @@ Task("PushNuGetPackage")
   .Does(async () => {
     var nugetPackageToPushFinder = container.Resolve<INugetPackageToPushFinder>();
     var finderErrorsAndInfos = new ErrorsAndInfos();
-    var packageToPush = await nugetPackageToPushFinder.FindPackageToPushAsync(mainNugetFeedId, new Folder(masterReleaseBinFolder.Replace('/', '\\')), new Folder(repositoryFolder.Replace('/', '\\')), solution.Replace('/', '\\'), finderErrorsAndInfos);
+    var packageToPush = await nugetPackageToPushFinder.FindPackageToPushAsync(mainNugetFeedId, new Folder(masterReleaseBinFolder.Replace('/', '\\')), new Folder(repositoryFolder.Replace('/', '\\')), solution.Replace('/', '\\'), currentGitBranch, finderErrorsAndInfos);
     if (finderErrorsAndInfos.Errors.Any()) {
       throw new Exception(finderErrorsAndInfos.ErrorsToString());
     }
