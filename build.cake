@@ -66,7 +66,7 @@ if (solutionSpecialSettingsDictionary.ContainsKey("CreateAndPushPackages")) {
   createAndPushPackages = createAndPushPackagesText == "TRUE";
 }
 
-var isMasterOrBranchWithPackages = false;
+var isMasterOrBranchWithPackages = (currentGitBranch == "master");
 if (createAndPushPackages) {
   var branchesWithPackagesRepository = container.Resolve<IBranchesWithPackagesRepository>();
   var bwpErrorsAndInfos = new ErrorsAndInfos();
@@ -74,7 +74,7 @@ if (createAndPushPackages) {
   if (bwpErrorsAndInfos.Errors.Any()) {
     throw new Exception(bwpErrorsAndInfos.ErrorsToString());
   }
-  isMasterOrBranchWithPackages = (currentGitBranch == "master") || idsOfBranchesWithPackages.Contains(currentGitBranch);
+  isMasterOrBranchWithPackages = isMasterOrBranchWithPackages || idsOfBranchesWithPackages.Contains(currentGitBranch);
 }
 
 var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
