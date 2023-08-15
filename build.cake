@@ -74,7 +74,7 @@ if (createAndPushPackages) {
   if (bwpErrorsAndInfos.Errors.Any()) {
     throw new Exception(bwpErrorsAndInfos.ErrorsToString());
   }
-  isMasterOrBranchWithPackages = idsOfBranchesWithPackages.Contains(currentGitBranch);
+  isMasterOrBranchWithPackages = (currentGitBranch == "master") || idsOfBranchesWithPackages.Contains(currentGitBranch);
 }
 
 var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
