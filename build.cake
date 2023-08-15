@@ -2,7 +2,7 @@
 #addin nuget:?package=Cake.Git&version=2.0.0
 #addin nuget:?package=System.Runtime.Loader
 #addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
-#addin nuget:?package=Fusion50&loaddependencies=true&version=2.0.1482.888
+#addin nuget:?package=Fusion50&loaddependencies=true&version=2.0.1483.916
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,7 +48,6 @@ var mainNugetFeedId = NugetFeed.AspenlaubLocalFeed;
 
 var container = FusionContainerBuilder.CreateContainerUsingFusionNuclideProtchAndGitty();
 var currentGitBranch = container.Resolve<IGitUtilities>().CheckedOutBranch(new Folder(repositoryFolder));
-var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
 
 var projectErrorsAndInfos = new ErrorsAndInfos();
 var projectLogic = container.Resolve<IProjectLogic>();
@@ -67,6 +66,22 @@ if (solutionSpecialSettingsDictionary.ContainsKey("CreateAndPushPackages")) {
   createAndPushPackages = createAndPushPackagesText == "TRUE";
 }
 
+var isMasterOrBranchWithPackages = false;
+if (createAndPushPackages) {
+  var branchesWithPackagesRepository = container.Resolve<IBranchesWithPackagesRepository>();
+  var bwpErrorsAndInfos = new ErrorsAndInfos();
+  var idsOfBranchesWithPackages = await branchesWithPackagesRepository.GetBranchIdsAsync(bwpErrorsAndInfos);
+  if (bwpErrorsAndInfos.Errors.Any()) {
+    throw new Exception(bwpErrorsAndInfos.ErrorsToString());
+  }
+  isMasterOrBranchWithPackages = idsOfBranchesWithPackages.Contains(currentGitBranch);
+}
+
+var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
+if (isMasterOrBranchWithPackages) {
+  latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/" + currentGitBranch + "/build.cake?g=" + System.Guid.NewGuid();
+}
+
 Setup(ctx => { 
   Information("Repository folder is: " + repositoryFolder);
   Information("Solution is: " + solution);
@@ -77,6 +92,7 @@ Setup(ctx => {
   Information("Current GIT branch is: " + currentGitBranch);
   Information("Build cake is: " + buildCakeFileName);
   Information("Latest build cake URL is: " + latestBuildCakeUrl);
+  Information("Is master branch or branch with packages: " + (isMasterOrBranchWithPackages ? "true" : "false"));
 });
 
 Task("UpdateBuildCake")
@@ -184,7 +200,7 @@ Task("VerifyThatThereAreUncommittedChanges")
   });
 
 Task("VerifyThatDevelopmentBranchIsAheadOfMaster")
-  .WithCriteria(() => currentGitBranch != "master")
+  .WithCriteria(() => !isMasterOrBranchWithPackages)
   .Description("Verify that if the development branch is at least one commit after the master")
   .Does(() => {
     if (!container.Resolve<IGitUtilities>().IsBranchAheadOfMaster(new Folder(repositoryFolder))) {
@@ -227,7 +243,7 @@ Task("VerifyThatDevelopmentBranchDoesNotHaveOpenPullRequests")
   });
 
 Task("VerifyThatPullRequestExistsForDevelopmentBranchHeadTip")
-  .WithCriteria(() => currentGitBranch != "master")
+  .WithCriteria(() => !isMasterOrBranchWithPackages)
   .Description("Verify that the master branch does have a pull request for the checked out development branch head tip")
   .Does(async () => {
     var noPullRequestsErrorsAndInfos = new ErrorsAndInfos();
@@ -277,7 +293,7 @@ Task("RunTestsOnDebugArtifacts")
   });
   
 Task("CopyDebugArtifacts")
-  .WithCriteria(() => currentGitBranch == "master")
+  .WithCriteria(() => isMasterOrBranchWithPackages)
   .Description("Copy Debug artifacts to master Debug binaries folder")
   .Does(async () => {
     var updater = container.Resolve<IFolderUpdater>();
@@ -333,7 +349,7 @@ Task("RunTestsOnReleaseArtifacts")
   });
 
 Task("CopyReleaseArtifacts")
-  .WithCriteria(() => currentGitBranch == "master")
+  .WithCriteria(() => isMasterOrBranchWithPackages)
   .Description("Copy Release artifacts to master Release binaries folder")
   .Does(async () => {
     var updater = container.Resolve<IFolderUpdater>();
@@ -355,7 +371,7 @@ Task("CopyReleaseArtifacts")
   });
 
 Task("CreateNuGetPackage")
-  .WithCriteria(() => currentGitBranch == "master" && createAndPushPackages)
+  .WithCriteria(() => isMasterOrBranchWithPackages && createAndPushPackages)
   .Description("Create nuget package in the master Release binaries folder")
   .Does(() => {
     var projectErrorsAndInfos = new ErrorsAndInfos();
@@ -380,7 +396,7 @@ Task("CreateNuGetPackage")
   });
 
 Task("PushNuGetPackage")
-  .WithCriteria(() => currentGitBranch == "master" && createAndPushPackages)
+  .WithCriteria(() => isMasterOrBranchWithPackages && createAndPushPackages)
   .Description("Push nuget package")
   .Does(async () => {
     var nugetPackageToPushFinder = container.Resolve<INugetPackageToPushFinder>();
@@ -468,7 +484,7 @@ Task("LittleThings")
   });
 
 Task("ValidatePackageUpdate")
-  .WithCriteria(() => currentGitBranch == "master")
+  .WithCriteria(() => isMasterOrBranchWithPackages)
   .Description("Build and test debug and release, update nuspec")
   .IsDependentOn("CleanRestorePull").IsDependentOn("VerifyThatThereAreUncommittedChanges")
   .IsDependentOn("BuildAndTestDebugAndRelease").IsDependentOn("UpdateNuspec")
