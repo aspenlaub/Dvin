@@ -66,16 +66,13 @@ if (solutionSpecialSettingsDictionary.ContainsKey("CreateAndPushPackages")) {
   createAndPushPackages = createAndPushPackagesText == "TRUE";
 }
 
-var isMasterOrBranchWithPackages = (currentGitBranch == "master");
-if (createAndPushPackages) {
-  var branchesWithPackagesRepository = container.Resolve<IBranchesWithPackagesRepository>();
-  var bwpErrorsAndInfos = new ErrorsAndInfos();
-  var idsOfBranchesWithPackages = await branchesWithPackagesRepository.GetBranchIdsAsync(bwpErrorsAndInfos);
-  if (bwpErrorsAndInfos.Errors.Any()) {
-    throw new Exception(bwpErrorsAndInfos.ErrorsToString());
-  }
-  isMasterOrBranchWithPackages = isMasterOrBranchWithPackages || idsOfBranchesWithPackages.Contains(currentGitBranch);
+var branchesWithPackagesRepository = container.Resolve<IBranchesWithPackagesRepository>();
+var bwpErrorsAndInfos = new ErrorsAndInfos();
+var idsOfBranchesWithPackages = await branchesWithPackagesRepository.GetBranchIdsAsync(bwpErrorsAndInfos);
+if (bwpErrorsAndInfos.Errors.Any()) {
+  throw new Exception(bwpErrorsAndInfos.ErrorsToString());
 }
+var isMasterOrBranchWithPackages = currentGitBranch == "master" || idsOfBranchesWithPackages.Contains(currentGitBranch);
 
 var latestBuildCakeUrl = "https://raw.githubusercontent.com/aspenlaub/Shatilaya/master/build.cake?g=" + System.Guid.NewGuid();
 if (isMasterOrBranchWithPackages) {
