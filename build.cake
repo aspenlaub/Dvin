@@ -2,7 +2,7 @@
 #addin nuget:?package=Cake.Git&version=2.0.0
 #addin nuget:?package=System.Runtime.Loader
 #addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
-#addin nuget:?package=Fusion50&loaddependencies=true&version=2.0.1484.1035
+#addin nuget:?package=Fusion-DotnetFive&loaddependencies=true&version=2.0.1486.1069
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,14 +20,14 @@ using Aspenlaub.Net.GitHub.CSharp.Gitty.Components;
 using Aspenlaub.Net.GitHub.CSharp.Protch;
 using Aspenlaub.Net.GitHub.CSharp.Protch.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Protch.Entities;
-using Aspenlaub.Net.GitHub.CSharp.Nuclide50;
-using Aspenlaub.Net.GitHub.CSharp.Nuclide50.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Nuclide50.Entities;
-using Aspenlaub.Net.GitHub.CSharp.Nuclide50.Components;
-using Aspenlaub.Net.GitHub.CSharp.Fusion50;
-using Aspenlaub.Net.GitHub.CSharp.Fusion50.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Fusion50.Components;
-using FolderUpdateMethod = Aspenlaub.Net.GitHub.CSharp.Fusion50.Interfaces.FolderUpdateMethod;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Nuclide.Components;
+using Aspenlaub.Net.GitHub.CSharp.Fusion;
+using Aspenlaub.Net.GitHub.CSharp.Fusion.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Fusion.Components;
+using FolderUpdateMethod = Aspenlaub.Net.GitHub.CSharp.Fusion.Interfaces.FolderUpdateMethod;
 
 masterDebugBinFolder = MakeAbsolute(Directory(masterDebugBinFolder)).FullPath;
 masterReleaseBinFolder = MakeAbsolute(Directory(masterReleaseBinFolder)).FullPath;
@@ -46,7 +46,7 @@ var tempCakeBuildFileName = tempFolder + "/build.cake.new";
 
 var mainNugetFeedId = NugetFeed.AspenlaubLocalFeed;
 
-var container = FusionContainerBuilder.CreateContainerUsingFusionNuclideProtchAndGitty();
+var container = FusionContainerBuilder.CreateContainerUsingFusionNuclideProtchAndGitty("Shatilaya");
 var currentGitBranch = container.Resolve<IGitUtilities>().CheckedOutBranch(new Folder(repositoryFolder));
 
 var projectErrorsAndInfos = new ErrorsAndInfos();
