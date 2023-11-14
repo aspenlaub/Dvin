@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Aspenlaub.Net.GitHub.CSharp.Dvin</AssemblyName>
     <RootNamespace>Aspenlaub.Net.GitHub.CSharp.Dvin</RootNamespace>
     <GenerateBuildInfoConfigFile>false</GenerateBuildInfoConfigFile>
@@ -23,6 +23,9 @@
     <NuspecFile>Dvin.nuspec</NuspecFile>
   </PropertyGroup>
   <ItemGroup>
+	<FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="Sample\**" />
     <Compile Remove="TestApp\**" />
     <Compile Remove="Test\**" />
@@ -43,8 +46,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
-    <PackageReference Include="Pegh" Version="2.0.1552.1159" />
+    <PackageReference Include="Pegh" Version="2.0.1574.1154" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
 </Project>
