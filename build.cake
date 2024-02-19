@@ -31,6 +31,7 @@ using FolderUpdateMethod = Aspenlaub.Net.GitHub.CSharp.Fusion.Interfaces.FolderU
 
 masterDebugBinFolder = MakeAbsolute(Directory(masterDebugBinFolder)).FullPath;
 masterReleaseBinFolder = MakeAbsolute(Directory(masterReleaseBinFolder)).FullPath;
+var masterReleaseCandidateBinFolder = masterReleaseBinFolder.Replace("/Release", "/ReleaseCandidate");
 
 var target = Argument("target", "Default");
 
@@ -66,6 +67,15 @@ if (solutionSpecialSettingsDictionary.ContainsKey("CreateAndPushPackages")) {
   createAndPushPackages = createAndPushPackagesText == "TRUE";
 }
 
+var produceReleaseCandidate = !createAndPushPackages;
+if (solutionSpecialSettingsDictionary.ContainsKey("ProduceReleaseCandidate")) {
+  var produceReleaseCandidateText = solutionSpecialSettingsDictionary["ProduceReleaseCandidate"].ToUpper();
+  if (produceReleaseCandidateText != "TRUE" && produceReleaseCandidateText != "FALSE") {
+    throw new Exception("Setting ProduceReleaseCandidate must be true or false");
+  }
+  produceReleaseCandidate = produceReleaseCandidateText == "TRUE";
+}
+
 var branchesWithPackagesRepository = container.Resolve<IBranchesWithPackagesRepository>();
 var bwpErrorsAndInfos = new ErrorsAndInfos();
 var idsOfBranchesWithPackages = await branchesWithPackagesRepository.GetBranchIdsAsync(bwpErrorsAndInfos);
@@ -90,6 +100,7 @@ Setup(ctx => {
   Information("Build cake is: " + buildCakeFileName);
   Information("Latest build cake URL is: " + latestBuildCakeUrl);
   Information("Is master branch or branch with packages: " + (isMasterOrBranchWithPackages ? "true" : "false"));
+  Information("ReleaseCandidate bin folder is: " + masterReleaseCandidateBinFolder);
 });
 
 Task("UpdateBuildCake")
@@ -359,6 +370,10 @@ Task("CopyReleaseArtifacts")
       await updater.UpdateFolderAsync(solutionId, currentGitBranch, headTipIdSha, new Folder(releaseBinFolder.Replace('/', '\\')),
         System.IO.File.ReadAllText(releaseBinHeadTipIdShaFile), new Folder(masterReleaseBinFolder.Replace('/', '\\')),
         true, createAndPushPackages, mainNugetFeedId, updaterErrorsAndInfos);
+    }
+    if (produceReleaseCandidate) {
+      updater.UpdateFolder(new Folder(releaseBinFolder.Replace('/', '\\')), new Folder(masterReleaseCandidateBinFolder.Replace('/', '\\')), 
+        FolderUpdateMethod.AssembliesEvenIfOnlySlightlyChanged, "Aspenlaub.Net.GitHub.CSharp." + solutionId, updaterErrorsAndInfos);
     }
     updaterErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
     if (updaterErrorsAndInfos.Errors.Any()) {
