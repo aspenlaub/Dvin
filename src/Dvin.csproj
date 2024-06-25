@@ -46,7 +46,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Pegh" Version="2.0.1774.1143" />
+    <PackageReference Include="Pegh" Version="2.0.1798.972" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
 </Project>
