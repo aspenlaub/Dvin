@@ -1,8 +1,9 @@
 #load "solution.cake"
-#addin nuget:?package=Cake.Git&version=3.0.0
+#addin nuget:?package=LibGit2Sharp&version=0.30.0
+#addin nuget:?package=Cake.Git&version=4.0.0
 #addin nuget:?package=System.Runtime.Loader
 #addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
-#addin nuget:?package=Fusion-UpToDate&loaddependencies=true&version=2.0.1578.1251
+#addin nuget:?package=Fusion-DotnetEight&loaddependencies=true&version=2.0.1858.935
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,7 @@ using FolderUpdateMethod = Aspenlaub.Net.GitHub.CSharp.Fusion.Interfaces.FolderU
 
 masterDebugBinFolder = MakeAbsolute(Directory(masterDebugBinFolder)).FullPath;
 masterReleaseBinFolder = MakeAbsolute(Directory(masterReleaseBinFolder)).FullPath;
+var masterReleaseCandidateBinFolder = masterReleaseBinFolder.Replace("/Release", "/ReleaseCandidate");
 
 var target = Argument("target", "Default");
 
@@ -66,6 +68,15 @@ if (solutionSpecialSettingsDictionary.ContainsKey("CreateAndPushPackages")) {
   createAndPushPackages = createAndPushPackagesText == "TRUE";
 }
 
+var produceReleaseCandidate = !createAndPushPackages;
+if (solutionSpecialSettingsDictionary.ContainsKey("ProduceReleaseCandidate")) {
+  var produceReleaseCandidateText = solutionSpecialSettingsDictionary["ProduceReleaseCandidate"].ToUpper();
+  if (produceReleaseCandidateText != "TRUE" && produceReleaseCandidateText != "FALSE") {
+    throw new Exception("Setting ProduceReleaseCandidate must be true or false");
+  }
+  produceReleaseCandidate = produceReleaseCandidateText == "TRUE";
+}
+
 var branchesWithPackagesRepository = container.Resolve<IBranchesWithPackagesRepository>();
 var bwpErrorsAndInfos = new ErrorsAndInfos();
 var idsOfBranchesWithPackages = await branchesWithPackagesRepository.GetBranchIdsAsync(bwpErrorsAndInfos);
@@ -90,6 +101,7 @@ Setup(ctx => {
   Information("Build cake is: " + buildCakeFileName);
   Information("Latest build cake URL is: " + latestBuildCakeUrl);
   Information("Is master branch or branch with packages: " + (isMasterOrBranchWithPackages ? "true" : "false"));
+  Information("ReleaseCandidate bin folder is: " + masterReleaseCandidateBinFolder);
 });
 
 Task("UpdateBuildCake")
@@ -359,6 +371,10 @@ Task("CopyReleaseArtifacts")
       await updater.UpdateFolderAsync(solutionId, currentGitBranch, headTipIdSha, new Folder(releaseBinFolder.Replace('/', '\\')),
         System.IO.File.ReadAllText(releaseBinHeadTipIdShaFile), new Folder(masterReleaseBinFolder.Replace('/', '\\')),
         true, createAndPushPackages, mainNugetFeedId, updaterErrorsAndInfos);
+    }
+    if (produceReleaseCandidate) {
+      updater.UpdateFolder(new Folder(releaseBinFolder.Replace('/', '\\')), new Folder(masterReleaseCandidateBinFolder.Replace('/', '\\')), 
+        FolderUpdateMethod.AssembliesEvenIfOnlySlightlyChanged, "Aspenlaub.Net.GitHub.CSharp." + solutionId, updaterErrorsAndInfos);
     }
     updaterErrorsAndInfos.Infos.ToList().ForEach(i => Information(i));
     if (updaterErrorsAndInfos.Errors.Any()) {
