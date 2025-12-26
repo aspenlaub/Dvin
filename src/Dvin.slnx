@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Dvin.csproj" />
+  <Project Path="Test/Dvin.Test.csproj" />
+</Solution>
