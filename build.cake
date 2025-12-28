@@ -36,7 +36,7 @@ var masterReleaseCandidateBinFolder = masterReleaseBinFolder.Replace("/Release",
 
 var target = Argument("target", "Default");
 
-var solutionId = solution.Substring(solution.LastIndexOf('/') + 1).Replace(".sln", "");
+var solutionId = solution.Substring(solution.LastIndexOf('/') + 1).Replace(".slnx", "").Replace(".sln", "");
 var debugBinFolder = MakeAbsolute(Directory("./src/bin/Debug")).FullPath;
 var releaseBinFolder = MakeAbsolute(Directory("./src/bin/Release")).FullPath;
 var testResultsFolder = MakeAbsolute(Directory("./TestResults")).FullPath;
@@ -54,7 +54,7 @@ var currentGitBranch = container.Resolve<IGitUtilities>().CheckedOutBranch(new F
 var projectErrorsAndInfos = new ErrorsAndInfos();
 var projectLogic = container.Resolve<IProjectLogic>();
 var projectFactory = container.Resolve<IProjectFactory>();
-var solutionFileFullName = (MakeAbsolute(DirectoryPath.FromString("./src")).FullPath + '\\' + solutionId + ".sln").Replace('/', '\\');
+var solutionFileFullName = (MakeAbsolute(DirectoryPath.FromString("./src")).FullPath + '\\' + solutionId + ".slnx").Replace('/', '\\');
 
 var masterReleaseBinParentFolder = new Folder(masterReleaseBinFolder.Replace('/', '\\')).ParentFolder();
 var releaseBinHeadTipIdShaFile = masterReleaseBinParentFolder.FullName + '\\' + "Release.HeadTipSha.txt";
@@ -179,7 +179,7 @@ Task("UpdateNuspec")
   .Description("Update nuspec if necessary")
   .Does(async () => {
     var solutionFileFullName = solution.Replace('/', '\\');
-    var nuSpecFile = solutionFileFullName.Replace(".sln", ".nuspec");
+    var nuSpecFile = solutionFileFullName.Replace(".slnx", ".nuspec").Replace(".sln", ".nuspec");
     var nuSpecErrorsAndInfos = new ErrorsAndInfos();
     var headTipIdSha = container.Resolve<IGitUtilities>().HeadTipIdSha(new Folder(repositoryFolder));
     await container.Resolve<INuSpecCreator>().CreateNuSpecFileIfRequiredOrPresentAsync(true, solutionFileFullName, currentGitBranch, new List<string> { headTipIdSha }, nuSpecErrorsAndInfos);
@@ -388,10 +388,10 @@ Task("CreateNuGetPackage")
   .Description("Create nuget package in the master Release binaries folder")
   .Does(() => {
     var projectErrorsAndInfos = new ErrorsAndInfos();
-    var solutionFileFullName = (MakeAbsolute(DirectoryPath.FromString("./src")).FullPath + '\\' + solutionId + ".sln").Replace('/', '\\');
-    var project = projectFactory.Load(solutionFileFullName, solutionFileFullName.Replace(".sln", ".csproj"), projectErrorsAndInfos);
+    var solutionFileFullName = (MakeAbsolute(DirectoryPath.FromString("./src")).FullPath + '\\' + solutionId + ".slnx").Replace('/', '\\');
+    var project = projectFactory.Load(solutionFileFullName, solutionFileFullName.Replace(".slnx", ".csproj").Replace(".sln", ".csproj"), projectErrorsAndInfos);
     if (!projectLogic.DoAllConfigurationsHaveNuspecs(project)) {
-        throw new Exception("The release configuration needs a NuspecFile entry" + "\r\n" + solutionFileFullName + "\r\n" + solutionFileFullName.Replace(".sln", ".csproj"));
+        throw new Exception("The release configuration needs a NuspecFile entry" + "\r\n" + solutionFileFullName + "\r\n" + solutionFileFullName.Replace(".slnx", ".csproj").Replace(".sln", ".csproj"));
     }
     if (projectErrorsAndInfos.Errors.Any()) {
         throw new Exception(projectErrorsAndInfos.ErrorsToString());
