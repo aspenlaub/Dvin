@@ -2,7 +2,7 @@
 #addin nuget:?package=LibGit2Sharp&version=0.30.0
 #addin nuget:?package=System.Runtime.Loader
 #addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
-#addin nuget:?package=Fusion-DotnetNine&loaddependencies=true&version=2.0.2386.1143
+#addin nuget:?package=Fusion-DotnetNine&loaddependencies=true&version=2.0.2386.1286
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
