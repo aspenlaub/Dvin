@@ -2,7 +2,7 @@
 #addin nuget:?package=LibGit2Sharp&version=0.30.0
 #addin nuget:?package=System.Runtime.Loader
 #addin nuget:?package=Microsoft.Bcl.AsyncInterfaces
-#addin nuget:?package=Fusion-DotnetNine&loaddependencies=true&version=2.0.2385.1102
+#addin nuget:?package=Fusion-DotnetNine&loaddependencies=true&version=2.0.2386.1143
 
 using Regex = System.Text.RegularExpressions.Regex;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +48,17 @@ var tempCakeBuildFileName = tempFolder + "/build.cake.new";
 var mainNugetFeedId = NugetFeed.AspenlaubLocalFeed;
 
 var container = FusionContainerBuilder.CreateContainerUsingFusionNuclideProtchAndGitty("Shatilaya");
+
+var dotNetCakeInstaller = container.Resolve<IDotNetCakeInstaller>();
+var dotNetCakeErrorsAndInfos = new ErrorsAndInfos();
+var doesGlobalCakeToolVersionMatchTargetFramework = dotNetCakeInstaller.DoesGlobalCakeToolVersionMatchTargetFramework(dotNetCakeErrorsAndInfos);
+if (dotNetCakeErrorsAndInfos.Errors.Any()) {
+  throw new Exception(dotNetCakeErrorsAndInfos.ErrorsToString());
+}
+if (!doesGlobalCakeToolVersionMatchTargetFramework) {
+  throw new Exception("The installed dotnet cake version does not match the target framework.");
+}
+
 var currentGitBranch = container.Resolve<IGitUtilities>().CheckedOutBranch(new Folder(repositoryFolder));
 
 var projectErrorsAndInfos = new ErrorsAndInfos();
