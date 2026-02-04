@@ -14,6 +14,6 @@ public class FileSystemServiceTest {
         var folder = new Folder(location);
         var sut = new FileSystemService();
         var files = sut.ListFilesInDirectory(folder, "*.*", SearchOption.AllDirectories);
-        Assert.IsTrue(files.Contains(location + @"\Autofac.dll"));
+        Assert.Contains(location + @"\Autofac.dll", files);
     }
 }

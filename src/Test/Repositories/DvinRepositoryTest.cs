@@ -1,9 +1,10 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
+using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Autofac;
@@ -16,18 +17,18 @@ public class DvinRepositoryTest {
     private readonly IContainer _Container;
 
     public DvinRepositoryTest() {
-        var builder = new ContainerBuilder().UseDvinAndPegh("Dvin", new DummyCsArgumentPrompter());
+        ContainerBuilder builder = new ContainerBuilder().UseDvinAndPegh("Dvin");
         _Container = builder.Build();
     }
 
     [TestMethod]
     public async Task CanGetDvinApps() {
-        var sut = _Container.Resolve<IDvinRepository>();
+        IDvinRepository sut = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
-        var apps = await sut.LoadAsync(errorsAndInfos);
+        IList<DvinApp> apps = await sut.LoadAsync(errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
         Assert.IsTrue(apps.Any());
-        foreach (var app in apps.Where(a => !a.Id.Contains("Grasp"))) {
+        foreach (DvinApp app in apps.Where(a => !a.Id.Contains("Grasp"))) {
             Assert.IsTrue(Directory.Exists(app.SolutionFolder), $"Folder does not exist: {app.SolutionFolder}");
             Assert.IsTrue(Directory.Exists(app.ReleaseFolder), $"Folder does not exist: {app.ReleaseFolder}");
             Assert.IsTrue(Directory.Exists(app.PublishFolder), $"Folder does not exist: {app.PublishFolder}");
@@ -37,12 +38,12 @@ public class DvinRepositoryTest {
 
     [TestMethod]
     public async Task CanGetDvinApp() {
-        var sut = _Container.Resolve<IDvinRepository>();
+        IDvinRepository sut = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
-        var apps = await sut.LoadAsync(errorsAndInfos);
+        IList<DvinApp> apps = await sut.LoadAsync(errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
         Assert.IsTrue(apps.Any());
-        var app = await sut.LoadAsync(apps[0].Id, errorsAndInfos);
+        DvinApp app = await sut.LoadAsync(apps[0].Id, errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
         Assert.AreEqual(app.Id, apps[0].Id);
     }

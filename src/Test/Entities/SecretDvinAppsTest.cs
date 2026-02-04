@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading.Tasks;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
@@ -15,17 +14,17 @@ public class SecretDvinAppsTest {
     private readonly IContainer _Container;
 
     public SecretDvinAppsTest() {
-        var builder = new ContainerBuilder().UsePegh("Dvin", new DummyCsArgumentPrompter());
+        ContainerBuilder builder = new ContainerBuilder().UsePegh("Dvin");
         _Container = builder.Build();
     }
 
     [TestMethod]
     public async Task CanGetSecretDvinApps() {
-        var repository = _Container.Resolve<ISecretRepository>();
+        ISecretRepository repository = _Container.Resolve<ISecretRepository>();
         var dvinAppsSecret = new SecretDvinApps();
         var errorsAndInfos = new ErrorsAndInfos();
-        var dvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
+        DvinApps dvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
         Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
-        Assert.IsTrue(dvinApps.Any(c => c.Id == "GraspNetCore"));
+        Assert.Contains(c => c.Id == "GraspNetCore", dvinApps);
     }
 }
