@@ -4,6 +4,7 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Components;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Seoa.Extensions;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -24,7 +25,7 @@ public class SecretDvinAppsTest {
         var dvinAppsSecret = new SecretDvinApps();
         var errorsAndInfos = new ErrorsAndInfos();
         DvinApps dvinApps = await repository.GetAsync(dvinAppsSecret, errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.Contains(c => c.Id == "GraspNetCore", dvinApps);
     }
 }

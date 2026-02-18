@@ -7,6 +7,7 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
+using Aspenlaub.Net.GitHub.CSharp.Seoa.Extensions;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -26,7 +27,7 @@ public class DvinRepositoryTest {
         IDvinRepository sut = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
         IList<DvinApp> apps = await sut.LoadAsync(errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.IsTrue(apps.Any());
         foreach (DvinApp app in apps.Where(a => !a.Id.Contains("Grasp"))) {
             Assert.IsTrue(Directory.Exists(app.SolutionFolder), $"Folder does not exist: {app.SolutionFolder}");
@@ -41,10 +42,10 @@ public class DvinRepositoryTest {
         IDvinRepository sut = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
         IList<DvinApp> apps = await sut.LoadAsync(errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.IsTrue(apps.Any());
         DvinApp app = await sut.LoadAsync(apps[0].Id, errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.AreEqual(app.Id, apps[0].Id);
     }
 }

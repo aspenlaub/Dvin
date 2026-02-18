@@ -14,6 +14,7 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Helpers;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Seoa.Extensions;
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -69,7 +70,7 @@ public class DvinAppExtensionsTest {
         errorsAndInfos = new ErrorsAndInfos();
         fileSystemServiceMock.Setup(f => f.ReadAllText(It.IsAny<string>())).Returns(ComposePubXml("$(MSBuildThisFileDirectory)..\\..\\GraspNetCoreBin\\Publish"));
         sut.ValidatePubXml(fileSystemServiceMock.Object, errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
 
         errorsAndInfos = new ErrorsAndInfos();
         sut.ValidatePubXml(errorsAndInfos);
@@ -149,7 +150,7 @@ public class DvinAppExtensionsTest {
         var fileSystemService = new FileSystemService();
         var errorsAndInfos = new ErrorsAndInfos();
         IList<DvinApp> apps = await repository.LoadAsync(errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         // ReSharper disable once LoopCanBePartlyConvertedToQuery
         foreach (DvinApp app in apps) {
             if (!app.HasAppBeenBuiltAfterLatestSourceChanges(fileSystemService)) { continue; }
@@ -157,7 +158,7 @@ public class DvinAppExtensionsTest {
             app.Publish(fileSystemService, errorsAndInfos);
             if (errorsAndInfos.Errors.Any(e => e.StartsWith("No folders specified"))) { continue; }
 
-            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+            Assert.That.ThereWereNoErrors(errorsAndInfos);
             break;
         }
     }
@@ -167,13 +168,13 @@ public class DvinAppExtensionsTest {
         IDvinRepository repository = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
         DvinApp dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.IsNotNull(dvinApp);
 
         var fileSystemService = new FileSystemService();
 
         dvinApp.ValidatePubXml(errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
 
 #if DEBUG
         if (!dvinApp.HasAppBeenBuiltAfterLatestSourceChanges(fileSystemService)) {
@@ -183,13 +184,13 @@ public class DvinAppExtensionsTest {
 
         if (!dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(fileSystemService)) {
             dvinApp.Publish(fileSystemService, errorsAndInfos);
-            Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+            Assert.That.ThereWereNoErrors(errorsAndInfos);
         }
 
         Assert.IsTrue(dvinApp.HasAppBeenPublishedAfterLatestSourceChanges(fileSystemService));
 
         using Process process = dvinApp.Start(fileSystemService, errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.IsNotNull(process);
         string url = $"http://localhost:{dvinApp.Port}/Home";
         Wait.Until(dvinApp.IsPortListenedTo, TimeSpan.FromSeconds(5));
@@ -221,24 +222,24 @@ public class DvinAppExtensionsTest {
         IDvinRepository repository = _Container.Resolve<IDvinRepository>();
         var errorsAndInfos = new ErrorsAndInfos();
         DvinApp dvinApp = await repository.LoadAsync(Constants.DvinSampleAppId, errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.IsNotNull(dvinApp);
 
         var fileSystemService = new FileSystemService();
 
         dvinApp.ValidatePubXml(errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
 
         DateTime timeBeforePublishing = DateTime.Now;
 
         dvinApp.Publish(fileSystemService, true, errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
 
         DateTime lastPublishedAt = dvinApp.LastPublishedAt(fileSystemService);
         Assert.IsGreaterThan(timeBeforePublishing, lastPublishedAt);
 
         using Process process = dvinApp.Start(fileSystemService, errorsAndInfos);
-        Assert.IsFalse(errorsAndInfos.AnyErrors(), errorsAndInfos.ErrorsToString());
+        Assert.That.ThereWereNoErrors(errorsAndInfos);
         Assert.IsNotNull(process);
         string url = $"http://localhost:{dvinApp.Port}/Publish";
         Wait.Until(dvinApp.IsPortListenedTo, TimeSpan.FromSeconds(5));
