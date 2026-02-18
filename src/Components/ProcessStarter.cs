@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 
@@ -21,7 +21,7 @@ public class ProcessStarter {
             return null;
         }
 
-        var process = CreateProcess(executableFullName, arguments, workingFolder);
+        Process process = CreateProcess(executableFullName, arguments, workingFolder);
         var outputWaitHandle = new AutoResetEvent(false);
         var errorWaitHandle = new AutoResetEvent(false);
         process.OutputDataReceived += (_, e) => {
@@ -39,8 +39,8 @@ public class ProcessStarter {
     }
 
     public void WaitForExit(Process process) {
-        var outputWaitHandle = _OutputWaitHandles[process];
-        var errorWaitHandle = _ErrorWaitHandles[process];
+        AutoResetEvent outputWaitHandle = _OutputWaitHandles[process];
+        AutoResetEvent errorWaitHandle = _ErrorWaitHandles[process];
         process.WaitForExit();
         outputWaitHandle.WaitOne();
         errorWaitHandle.WaitOne();

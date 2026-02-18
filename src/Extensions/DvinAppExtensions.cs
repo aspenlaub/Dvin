@@ -11,6 +11,8 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 
@@ -28,14 +30,14 @@ public static class DvinAppExtensions {
         }
 
         var solutionFolder = new Folder(dvinApp.SolutionFolder);
-        var pubXmlFiles =  fileSystemService.ListFilesInDirectory(solutionFolder, "*.pubxml", SearchOption.AllDirectories);
+        IList<string> pubXmlFiles =  fileSystemService.ListFilesInDirectory(solutionFolder, "*.pubxml", SearchOption.AllDirectories);
         if (pubXmlFiles.Count != 1) {
             errorsAndInfos.Errors.Add($"Found {pubXmlFiles.Count} pubxml files in secret {dvinApp.Id} dvin app");
             return;
         }
 
         XDocument document;
-        var pubXmlFile = pubXmlFiles[0];
+        string pubXmlFile = pubXmlFiles[0];
         try {
             document = XDocument.Parse(fileSystemService.ReadAllText(pubXmlFile));
         } catch {
@@ -46,7 +48,7 @@ public static class DvinAppExtensions {
         var namespaceManager = new XmlNamespaceManager(new NameTable());
         namespaceManager.AddNamespace("cp", _csProjNamespace);
 
-        var publishUrlElementValue = document.XPathSelectElement("./cp:Project/cp:PropertyGroup/cp:publishUrl", namespaceManager)?.Value;
+        string publishUrlElementValue = document.XPathSelectElement("./cp:Project/cp:PropertyGroup/cp:publishUrl", namespaceManager)?.Value;
         if (string.IsNullOrWhiteSpace(publishUrlElementValue)) {
             errorsAndInfos.Errors.Add($"publishUrl element not found in {pubXmlFile}");
             return;
@@ -67,7 +69,7 @@ public static class DvinAppExtensions {
             return;
         }
 
-        var expectedPublishUrlElement = "$(MSBuildThisFileDirectory)" + string.Join("", pubXmlFile.Substring(pos + 1).ToCharArray().Where(c => c == '\\').Select(_ => @"..\")) + publishFolder.FullName.Substring(pos + 1);
+        string expectedPublishUrlElement = "$(MSBuildThisFileDirectory)" + string.Join("", pubXmlFile.Substring(pos + 1).ToCharArray().Where(c => c == '\\').Select(_ => @"..\")) + publishFolder.FullName.Substring(pos + 1);
 
         if (publishUrlElementValue == expectedPublishUrlElement) {
             return;
@@ -79,7 +81,7 @@ public static class DvinAppExtensions {
     public static bool IsPortListenedTo(this IDvinApp dvinApp) {
         var processStarter = new ProcessStarter();
         var errorsAndInfos = new ErrorsAndInfos();
-        using var process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos);
+        using Process process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos);
         if (process != null) {
             processStarter.WaitForExit(process);
         }
@@ -102,11 +104,11 @@ public static class DvinAppExtensions {
             ).ToList();
         if (!sourceFiles.Any()) { return false; }
 
-        var publishedFiles = Artifacts(fileSystemService, artifactsFolder);
+        List<string> publishedFiles = Artifacts(fileSystemService, artifactsFolder);
         if (!publishedFiles.Any()) { return false; }
 
-        var sourceChangedAt = sourceFiles.Max(f => fileSystemService.LastWriteTime(f));
-        var publishedAt = publishedFiles.Max(f => fileSystemService.LastWriteTime(f));
+        DateTime sourceChangedAt = sourceFiles.Max(fileSystemService.LastWriteTime);
+        DateTime publishedAt = publishedFiles.Max(fileSystemService.LastWriteTime);
         return publishedAt > sourceChangedAt.AddSeconds(1);
     }
 
@@ -136,20 +138,20 @@ public static class DvinAppExtensions {
             return;
         }
 
-        var publishedFiles = Artifacts(fileSystemService, new Folder(dvinApp.PublishFolder));
-        var lastPublishedAt = publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
+        List<string> publishedFiles = Artifacts(fileSystemService, new Folder(dvinApp.PublishFolder));
+        DateTime lastPublishedAt = publishedFiles.Any() ? publishedFiles.Max(fileSystemService.LastWriteTime) : DateTime.Now;
 
         MakeCopiesOfAssemblies(new Folder(dvinApp.PublishFolder), fileSystemService);
 
-        var projectFile = fileSystemService.ListFilesInDirectory(new Folder(dvinApp.SolutionFolder), "*.csproj", SearchOption.AllDirectories).FirstOrDefault(f => f.EndsWith(dvinApp.Id + ".csproj"));
+        string projectFile = fileSystemService.ListFilesInDirectory(new Folder(dvinApp.SolutionFolder), "*.csproj", SearchOption.AllDirectories).FirstOrDefault(f => f.EndsWith(dvinApp.Id + ".csproj"));
         if (projectFile == null) {
             errorsAndInfos.Errors.Add($"No project file found for dvin app {dvinApp.Id} (must end with {dvinApp.Id}.csproj)");
             return;
         }
 
         var processStarter = new ProcessStarter();
-        var arguments = $"publish \"{projectFile}\" -c Release --no-restore -o \"{dvinApp.PublishFolder}\"";
-        using (var process = processStarter.StartProcess("dotnet", arguments, "", errorsAndInfos)) {
+        string arguments = $"publish \"{projectFile}\" -c Release --no-restore -o \"{dvinApp.PublishFolder}\"";
+        using (Process process = processStarter.StartProcess("dotnet", arguments, "", errorsAndInfos)) {
             if (process != null) {
                 processStarter.WaitForExit(process);
             }
@@ -161,7 +163,7 @@ public static class DvinAppExtensions {
         }
 
         publishedFiles = Artifacts(fileSystemService, new Folder(dvinApp.PublishFolder));
-        if (!publishedFiles.Any() || lastPublishedAt >= publishedFiles.Max(f => fileSystemService.LastWriteTime(f))) {
+        if (!publishedFiles.Any() || lastPublishedAt >= publishedFiles.Max(fileSystemService.LastWriteTime)) {
             errorsAndInfos.Errors.Add($"Nothing was published for dvin app {dvinApp.Id}");
         }
 
@@ -173,8 +175,8 @@ public static class DvinAppExtensions {
 
         var files = fileSystemService.ListFilesInDirectory(publishFolder, "*.dll", SearchOption.AllDirectories).ToList();
         files.AddRange(fileSystemService.ListFilesInDirectory(publishFolder, "*.exe", SearchOption.AllDirectories).ToList());
-        foreach (var fileName in files.Where(f => !f.Contains(@"\%"))) {
-            var i = 0;
+        foreach (string fileName in files.Where(f => !f.Contains(@"\%"))) {
+            int i = 0;
             string freshNameOne, freshNameTwo;
             do {
                 freshNameOne = RenamedFile(fileName, i);
@@ -192,7 +194,7 @@ public static class DvinAppExtensions {
 
     private static void DeleteUnusedFileCopies(IFolder publishFolder, IFileSystemService fileSystemService) {
         var files = fileSystemService.ListFilesInDirectory(publishFolder, "%*.dll", SearchOption.AllDirectories).ToList();
-        foreach (var file in files) {
+        foreach (string file in files) {
             try {
                 fileSystemService.DeleteFile(file);
                 // ReSharper disable once EmptyGeneralCatchClause
@@ -201,7 +203,7 @@ public static class DvinAppExtensions {
     }
 
     private static string RenamedFile(string fileName, int counter) {
-        var path = fileName.Substring(0, fileName.LastIndexOf('\\') + 1);
+        string path = fileName.Substring(0, fileName.LastIndexOf('\\') + 1);
         return $"{path}%{counter}%{fileName.Substring(path.Length)}";
     }
 
@@ -217,13 +219,13 @@ public static class DvinAppExtensions {
         }
 
         var runner = new ProcessStarter();
-        var process = runner.StartProcess("dotnet", dvinApp.Executable, dvinApp.PublishFolder, errorsAndInfos);
+        Process process = runner.StartProcess("dotnet", dvinApp.Executable, dvinApp.PublishFolder, errorsAndInfos);
         return process;
     }
 
     public static DateTime LastPublishedAt(this IDvinApp dvinApp, IFileSystemService fileSystemService) {
-        var publishedFiles = Artifacts(fileSystemService, new Folder(dvinApp.PublishFolder));
-        return publishedFiles.Any() ? publishedFiles.Max(f => fileSystemService.LastWriteTime(f)) : DateTime.Now;
+        List<string> publishedFiles = Artifacts(fileSystemService, new Folder(dvinApp.PublishFolder));
+        return publishedFiles.Any() ? publishedFiles.Max(fileSystemService.LastWriteTime) : DateTime.Now;
     }
 
     public static async Task ResolveFoldersAsync(this IDvinApp dvinApp, IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos) {

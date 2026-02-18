@@ -5,17 +5,13 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Repositories;
 
-public class DvinRepository : IDvinRepository {
-    protected readonly IFolderResolver FolderResolver;
-    protected readonly ISecretRepository SecretRepository;
-
-    public DvinRepository(IFolderResolver folderResolver, ISecretRepository secretRepository) {
-        FolderResolver = folderResolver;
-        SecretRepository = secretRepository;
-    }
+public class DvinRepository(IFolderResolver folderResolver, ISecretRepository secretRepository) : IDvinRepository {
+    protected readonly IFolderResolver FolderResolver = folderResolver;
+    protected readonly ISecretRepository SecretRepository = secretRepository;
 
     public async Task<IList<DvinApp>> LoadAsync(IErrorsAndInfos errorsAndInfos) {
         return await LoadAsync(true, errorsAndInfos);
@@ -23,7 +19,7 @@ public class DvinRepository : IDvinRepository {
 
     private async Task<IList<DvinApp>> LoadAsync(bool resolve, IErrorsAndInfos errorsAndInfos) {
         var dvinAppsSecret = new SecretDvinApps();
-        var secretDvinApps = await SecretRepository.GetAsync(dvinAppsSecret, errorsAndInfos);
+        DvinApps secretDvinApps = await SecretRepository.GetAsync(dvinAppsSecret, errorsAndInfos);
         if (!resolve || errorsAndInfos.AnyErrors()) { return secretDvinApps; }
 
         await secretDvinApps.ResolveFoldersAsync(FolderResolver, errorsAndInfos);
@@ -31,8 +27,8 @@ public class DvinRepository : IDvinRepository {
     }
 
     public async Task<DvinApp> LoadAsync(string id, IErrorsAndInfos errorsAndInfos) {
-        var dvinApps = await LoadAsync(false, errorsAndInfos);
-        var dvinApp = dvinApps.FirstOrDefault(d => d.Id == id);
+        IList<DvinApp> dvinApps = await LoadAsync(false, errorsAndInfos);
+        DvinApp dvinApp = dvinApps.FirstOrDefault(d => d.Id == id);
         if (dvinApp != null) {
             await dvinApp.ResolveFoldersAsync(FolderResolver, errorsAndInfos);
         }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
+using Aspenlaub.Net.GitHub.CSharp.Skladasu.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 
@@ -15,7 +16,7 @@ public class DvinApps : List<DvinApp>, ISecretResult<DvinApps> {
     }
 
     public async Task ResolveFoldersAsync(IFolderResolver folderResolver, IErrorsAndInfos errorsAndInfos) {
-        foreach (var dvinApp in this) {
+        foreach (DvinApp dvinApp in this) {
             await dvinApp.ResolveFoldersAsync(folderResolver, errorsAndInfos);
         }
     }
