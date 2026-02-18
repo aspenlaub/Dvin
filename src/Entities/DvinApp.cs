@@ -21,32 +21,28 @@ public class DvinApp : IDvinApp {
     [XmlIgnore]
     public bool AreFoldersBeingResolved { get; set; }
 
-    private string _SolutionFolder;
     [XmlElement("solutionfolder")]
     public string SolutionFolder {
-        get => ReturnFolderThrowExceptionIfUnresolved(_SolutionFolder);
-        set => _SolutionFolder = value;
+        get { return ReturnFolderThrowExceptionIfUnresolved(field); }
+        set;
     }
 
-    private string _ReleaseFolder;
     [XmlElement("releasefolder")]
     public string ReleaseFolder {
-        get => ReturnFolderThrowExceptionIfUnresolved(_ReleaseFolder);
-        set => _ReleaseFolder = value;
+        get { return ReturnFolderThrowExceptionIfUnresolved(field); }
+        set;
     }
 
-    private string _PublishFolder;
     [XmlElement("publishfolder")]
     public string PublishFolder {
-        get => ReturnFolderThrowExceptionIfUnresolved(_PublishFolder);
-        set => _PublishFolder = value;
+        get { return ReturnFolderThrowExceptionIfUnresolved(field); }
+        set;
     }
 
-    private string _ExceptionLogFolder;
     [XmlElement("exceptionlogfolder")]
     public string ExceptionLogFolder {
-        get => ReturnFolderThrowExceptionIfUnresolved(_ExceptionLogFolder);
-        set => _ExceptionLogFolder = value;
+        get { return ReturnFolderThrowExceptionIfUnresolved(field); }
+        set;
     }
 
     private string ReturnFolderThrowExceptionIfUnresolved(string folder) {

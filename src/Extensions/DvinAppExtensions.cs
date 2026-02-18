@@ -15,7 +15,7 @@ using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
 
 public static class DvinAppExtensions {
-    private const string CsProjNamespace = "http://schemas.microsoft.com/developer/msbuild/2003";
+    private const string _csProjNamespace = "http://schemas.microsoft.com/developer/msbuild/2003";
 
     public static void ValidatePubXml(this IDvinApp dvinApp, IErrorsAndInfos errorsAndInfos) {
         ValidatePubXml(dvinApp, new FileSystemService(), errorsAndInfos);
@@ -44,7 +44,7 @@ public static class DvinAppExtensions {
         }
 
         var namespaceManager = new XmlNamespaceManager(new NameTable());
-        namespaceManager.AddNamespace("cp", CsProjNamespace);
+        namespaceManager.AddNamespace("cp", _csProjNamespace);
 
         var publishUrlElementValue = document.XPathSelectElement("./cp:Project/cp:PropertyGroup/cp:publishUrl", namespaceManager)?.Value;
         if (string.IsNullOrWhiteSpace(publishUrlElementValue)) {
@@ -52,7 +52,7 @@ public static class DvinAppExtensions {
             return;
         }
 
-        if (!publishUrlElementValue.StartsWith(@"$(MSBuildThisFileDirectory)")) {
+        if (!publishUrlElementValue.StartsWith("$(MSBuildThisFileDirectory)")) {
             errorsAndInfos.Errors.Add($"publishUrl element in {pubXmlFile} does not start with $(MSBuildThisFileDirectory)");
             return;
         }
