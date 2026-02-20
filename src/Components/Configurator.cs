@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Skladasu.Extensions;
 using Autofac;
 
-namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Singletons;
+namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 
-public static class DvinAppHelper {
+public static class Configurator {
     public static IDvinApp LookUpDvinApp(string applicationName, string dvinAppId) {
         return LookUpDvinAppAsync(applicationName, dvinAppId).Result;
     }
