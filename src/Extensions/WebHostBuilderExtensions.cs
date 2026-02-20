@@ -7,6 +7,7 @@ using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Skladasu.Extensions;
 using Autofac;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 // ReSharper disable UnusedMember.Global
 
@@ -30,8 +31,8 @@ public static class WebHostBuilderExtensions {
         return builder;
     }
 
-    public static void RunHost(this IWebHostBuilder builder) {
-        IWebHost host = builder.Build();
+    public static void RunHost(this IHostBuilder builder) {
+        IHost host = builder.Build();
         host.Run();
     }
 }
