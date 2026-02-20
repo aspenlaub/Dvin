@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 
-public static class Configurator {
+public static class DvinConfigurator {
     public static IWebHostBuilder ConfigureUrl(this IWebHostBuilder builder, string applicationName, string dvinAppId) {
         return ConfigureUrlAsync(builder, applicationName, dvinAppId).Result;
     }
