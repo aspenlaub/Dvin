@@ -17,13 +17,14 @@
     <RepositoryUrl>https://github.com/aspenlaub/Dvin.git</RepositoryUrl>
     <RepositoryBranch>master</RepositoryBranch>
     <PackageId>Dvin</PackageId>
+    <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <NuspecFile>Dvin.nuspec</NuspecFile>
   </PropertyGroup>
   <ItemGroup>
-	<FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Sample\**" />
