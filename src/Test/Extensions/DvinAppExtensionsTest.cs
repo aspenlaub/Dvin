@@ -196,6 +196,7 @@ public class DvinAppExtensionsTest {
         Wait.Until(dvinApp.IsPortListenedTo, TimeSpan.FromSeconds(5));
         Assert.IsTrue(dvinApp.IsPortListenedTo(), errorsAndInfos.ErrorsToString());
         try {
+            // ReSharper disable once ShortLivedHttpClient
             using var client = new HttpClient();
             HttpResponseMessage response = await client.GetAsync(url);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
@@ -245,6 +246,7 @@ public class DvinAppExtensionsTest {
         Wait.Until(dvinApp.IsPortListenedTo, TimeSpan.FromSeconds(5));
         Assert.IsTrue(dvinApp.IsPortListenedTo(), errorsAndInfos.ErrorsToString());
         try {
+            // ReSharper disable once ShortLivedHttpClient
             using var client = new HttpClient();
             timeBeforePublishing = DateTime.Now;
             HttpResponseMessage response = await client.GetAsync(url);

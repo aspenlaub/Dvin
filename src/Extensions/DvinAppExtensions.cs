@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
@@ -11,7 +13,6 @@ using Aspenlaub.Net.GitHub.CSharp.Dvin.Components;
 using Aspenlaub.Net.GitHub.CSharp.Dvin.Interfaces;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Pegh.Interfaces;
-using Aspenlaub.Net.GitHub.CSharp.Skladasu.Entities;
 using Aspenlaub.Net.GitHub.CSharp.Skladasu.Interfaces;
 
 namespace Aspenlaub.Net.GitHub.CSharp.Dvin.Extensions;
@@ -79,14 +80,10 @@ public static class DvinAppExtensions {
     }
 
     public static bool IsPortListenedTo(this IDvinApp dvinApp) {
-        var processStarter = new ProcessStarter();
-        var errorsAndInfos = new ErrorsAndInfos();
-        using Process process = processStarter.StartProcess("netstat", "-n -a", "", errorsAndInfos);
-        if (process != null) {
-            processStarter.WaitForExit(process);
-        }
+        var ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+        IPEndPoint[] tcpListeners = ipGlobalProperties.GetActiveTcpListeners();
 
-        return errorsAndInfos.Infos.Any(i => i.Contains("TCP") && (i.Contains("LISTENING") || i.Contains("ABHÖREN") || i.Contains("ABH™REN")) && i.Contains($":{dvinApp.Port} "));
+        return tcpListeners.Any(endpoint => endpoint.Port == dvinApp.Port);
     }
 
     public static bool HasAppBeenPublishedAfterLatestSourceChanges(this IDvinApp dvinApp, IFileSystemService fileSystemService) {
@@ -113,9 +110,10 @@ public static class DvinAppExtensions {
     }
 
     private static List<string> Artifacts(IFileSystemService fileSystemService, IFolder artifactsFolder) {
-        return fileSystemService.ListFilesInDirectory(artifactsFolder, "*.*", SearchOption.AllDirectories)
-            .Where(f => !f.Contains(@"\%") && (f.EndsWith("dll") || f.EndsWith("config") || f.EndsWith("dll") || f.EndsWith("exe") || f.EndsWith("json")))
-            .ToList();
+        return [
+            .. fileSystemService.ListFilesInDirectory(artifactsFolder, "*.*", SearchOption.AllDirectories)
+                                .Where(f => !f.Contains(@"\%") && (f.EndsWith("dll") || f.EndsWith("config") || f.EndsWith("dll") || f.EndsWith("exe") || f.EndsWith("json")))
+        ];
     }
 
     public static void Publish(this IDvinApp dvinApp, IFileSystemService fileSystemService, IErrorsAndInfos errorsAndInfos) {
@@ -174,7 +172,7 @@ public static class DvinAppExtensions {
         DeleteUnusedFileCopies(publishFolder, fileSystemService);
 
         var files = fileSystemService.ListFilesInDirectory(publishFolder, "*.dll", SearchOption.AllDirectories).ToList();
-        files.AddRange(fileSystemService.ListFilesInDirectory(publishFolder, "*.exe", SearchOption.AllDirectories).ToList());
+        files.AddRange([.. fileSystemService.ListFilesInDirectory(publishFolder, "*.exe", SearchOption.AllDirectories)]);
         foreach (string fileName in files.Where(f => !f.Contains(@"\%"))) {
             int i = 0;
             string freshNameOne, freshNameTwo;
