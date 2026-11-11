@@ -16,7 +16,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'" />
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.21.0" />
-    <PackageReference Include="Seoa" Version="2.0.2666.1373" />
+    <PackageReference Include="Seoa" Version="2.0.2667.1288" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Dvin.csproj" />
